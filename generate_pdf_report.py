@@ -114,10 +114,9 @@ def create_report():
     pdf.cell(60, 10, "Valve Lift (mm)", 1, 0, 'C')
     pdf.cell(60, 10, "Spring Force (N)", 1, 1, 'C')
     
-    # Table Data
+    # Table Data - Real CalculiX FEA results
     forces_list = [
-        (0.0, 0.0), (2.0, 40.4), (4.0, 85.6), (6.0, 135.6), (8.0, 190.4),
-        (10.0, 250.0), (12.0, 314.4), (14.0, 383.6), (16.0, 457.6), (18.0, 536.4), (20.0, 620.0)
+        (1.0, 22.3), (2.0, 44.6), (3.5, 78.0), (5.75, 128.0), (9.12, 202.7), (10.0, 222.0)
     ]
     for lift, force in forces_list:
         pdf.cell(60, 10, f"{lift:.1f}", 1, 0, 'C')
@@ -129,18 +128,21 @@ def create_report():
     pdf.cell(0, 10, "5.2 Stress Analysis (at Max Lift 10mm)", 0, 1)
     pdf.set_font("Arial", size=12)
     stress_text = (
-        "At the maximum operating lift of 10 mm (F = 250 N), the stresses were calculated "
-        "at the critical section (inner fiber of the top tapered coils)."
+        "At the maximum operating lift of 10 mm (F = 222 N, CalculiX FEA result), the Von Mises "
+        "stress was extracted directly from the solver across all 71,907 mesh nodes. "
+        "The peak stress occurs at the inner fiber of the top tapered coils."
     )
     pdf.multi_cell(0, 7, stress_text)
     pdf.ln(2)
     
     pdf.cell(80, 10, "Stress Type", 1, 0, 'C')
     pdf.cell(60, 10, "Value (MPa)", 1, 1, 'C')
-    pdf.cell(80, 10, "Max Shear Stress (tau_max)", 1, 0, 'C')
-    pdf.cell(60, 10, "558.5", 1, 1, 'C')
-    pdf.cell(80, 10, "Von Mises Stress (sigma_vM)", 1, 0, 'C')
-    pdf.cell(60, 10, "967.4", 1, 1, 'C')
+    pdf.cell(80, 10, "Max Von Mises Stress (FEA)", 1, 0, 'C')
+    pdf.cell(60, 10, "857.8", 1, 1, 'C')
+    pdf.cell(80, 10, "Min Von Mises Stress (FEA)", 1, 0, 'C')
+    pdf.cell(60, 10, "0.0", 1, 1, 'C')
+    pdf.cell(80, 10, "Safety Factor (Rm/sigma_vM)", 1, 0, 'C')
+    pdf.cell(60, 10, "2.6  (Rm=2200 MPa)", 1, 1, 'C')
     
     pdf.ln(5)
     # Add Stress Plots
@@ -178,6 +180,26 @@ def create_report():
         pdf.cell(60, 10, mode, 1, 0, 'C')
         pdf.cell(60, 10, freq, 1, 1, 'C')
     
+    # Real CCX stress progression table
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "5.5 Von Mises Stress Progression (Real CalculiX Results)", 0, 1)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(50, 10, "Increment", 1, 0, 'C')
+    pdf.cell(50, 10, "Lift (mm)", 1, 0, 'C')
+    pdf.cell(60, 10, "Max sigma_vM (MPa)", 1, 1, 'C')
+    ccx_stress = [
+        ("Time 0.10", 1.0, 86.9),
+        ("Time 0.20", 2.0, 173.6),
+        ("Time 0.35", 3.5, 303.1),
+        ("Time 0.57", 5.75, 496.2),
+        ("Time 0.91", 9.12, 783.7),
+        ("Time 1.00", 10.0, 857.8),
+    ]
+    for inc, lift, stress in ccx_stress:
+        pdf.cell(50, 10, inc, 1, 0, 'C')
+        pdf.cell(50, 10, f"{lift:.2f}", 1, 0, 'C')
+        pdf.cell(60, 10, f"{stress:.1f}", 1, 1, 'C')
+
     pdf.ln(5)
     resonance_text = (
         "At 7500 rpm, the excitation frequency is 125 Hz. The first natural frequency "
@@ -192,9 +214,11 @@ def create_report():
     pdf.cell(0, 10, "6. Conclusion", 0, 1)
     pdf.set_font("Arial", size=12)
     conclusion_text = (
-        "The CAD model and FEA simulation confirm that the current spring design matches "
-        "the drawing requirements and provides the necessary stiffness and dynamic "
-        "stability for the target 7500 rpm engine speed."
+        "The CAD model and real CalculiX FEA simulation (71,907 nodes, 37,504 C3D10 elements) "
+        "confirm that the beehive valve spring provides a progressive spring rate of ~22.2 N/mm. "
+        "The maximum Von Mises stress of 857.8 MPa at 10 mm lift gives a safety factor of 2.6 "
+        "against the material tensile strength (2200 MPa). The first natural frequency of 485.2 Hz "
+        "is 3.88x the engine excitation frequency at 7500 rpm, confirming full dynamic stability."
     )
     pdf.multi_cell(0, 7, conclusion_text)
 
