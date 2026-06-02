@@ -116,9 +116,24 @@ def create_report():
     pdf.cell(60, 10, "967.4", 1, 1, 'C')
     
     pdf.ln(5)
-    # Add Stress Plot
+    # Add Stress Plots
     if os.path.exists("stress_plot.png"):
+        pdf.cell(0, 10, "Stress over Valve Lift", 0, 1, 'L')
         pdf.image("stress_plot.png", x=10, w=180)
+        pdf.ln(5)
+    
+    if os.path.exists("stress_cross_section.png"):
+        pdf.add_page() # New page for cross-section detail
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 10, "4.3 Cross-Section Stress Distribution (at 10mm lift)", 0, 1)
+        pdf.set_font("Arial", size=12)
+        dist_text = (
+            "The plot below shows the calculated stress distribution across the oval "
+            "wire cross-section. Note the higher stress concentration on the inner "
+            "fiber of the coil (left side of the plot) due to the curvature effect."
+        )
+        pdf.multi_cell(0, 7, dist_text)
+        pdf.image("stress_cross_section.png", x=10, w=180)
     pdf.ln(5)
 
     # Frequencies
