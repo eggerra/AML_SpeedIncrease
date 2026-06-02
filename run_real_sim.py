@@ -1,100 +1,100 @@
 import os
 import sys
 
-# Add FreeCAD path
-sys.path.append(r"C:\Users\eggerra\AppData\Local\Programs\FreeCAD 1.1\bin")
+if 'FreeCAD' not in sys.modules:
+    sys.path.append(r"C:\Users\eggerra\AppData\Local\Programs\FreeCAD 1.1\bin")
 
 import FreeCAD
 import Fem
 import ObjectsFem
 from femtools import ccxtools
 
-def run_real_simulation():
-    doc_path = "ValveSpring_FEA_populated.FCStd"
+def run_real_sim():
+    doc_path = "ValveSpring_FEA_meshed.FCStd"
     if not os.path.exists(doc_path):
         print(f"Error: {doc_path} not found.")
         return
 
-    print(f"Opening {doc_path}...")
     doc = FreeCAD.open(doc_path)
     analysis = doc.getObject("Analysis")
-    solver = doc.getObject("CalculiX")
-    
-    # Check if solver exists, if not create it
-    if not solver:
-        print("CalculiX solver not found. Creating a new one...")
-        try:
-            solver = ObjectsFem.makeSolverCalculiXCcxTools(doc, "CalculiX")
-        except AttributeError:
-            solver = ObjectsFem.makeSolverCalculiX(doc, "CalculiX")
-        analysis.addObject(solver)
+    spring = doc.getObject("Spring")
+    femmesh_obj = doc.getObject("FEMMesh")
+
+    # Add constraints if they don't exist
+    if not doc.getObject("FixedBottom"):
+        faces = spring.Shape.Faces
+        bottom_face_idx = -1
+        top_face_idx = -1
+        for i, f in enumerate(faces):
+            z = f.CenterOfMass.z
+            if abs(z) < 0.1: bottom_face_idx = i + 1
+            elif abs(z - 46.1) < 0.5: top_face_idx = i + 1
         
-        # Configure non-linear
-        if hasattr(solver, "GeometricalNonlinearity"):
-            solver.GeometricalNonlinearity = 'nonlinear'
-        elif hasattr(solver, "GeometriesNonLinear"):
-            solver.GeometriesNonLinear = 'True'
-        
-        # Add to analysis group if not already there
-        if solver not in analysis.Group:
-            analysis.addObject(solver)
-    
-    # Ensure boundary conditions are in the analysis
-    # Let's find them in the document
-    fixed = doc.getObject("FixedBottom")
-    displ = doc.getObject("DisplacementTop")
-    if fixed and fixed not in analysis.Group:
+        fixed = doc.addObject("Fem::ConstraintFixed", "FixedBottom")
+        fixed.References = [(spring, f"Face{bottom_face_idx}")]
         analysis.addObject(fixed)
-    if displ and displ not in analysis.Group:
+        
+        displ = doc.addObject("Fem::ConstraintDisplacement", "DisplacementTop")
+        displ.References = [(spring, f"Face{top_face_idx}")]
+        displ.zFree = False
+        displ.zDisplacement = -5.0
         analysis.addObject(displ)
 
-    # Add element geometry for shell thickness if using 2D elements
-    print("Adding 2D element geometry (Thickness)...")
-    try:
-        el_geom = ObjectsFem.makeElementGeometry2D(doc, "ElementGeometry2D")
-        el_geom.Thickness = 3.0 # Approximate representative thickness
-        analysis.addObject(el_geom)
-    except Exception as e:
-        print(f"Warning: Could not add 2D element geometry: {e}")
+    # Re-import mesh into FemMesh
+    m = doc.getObject('Mesh')
+    import FemMesh
+    new_fm = FemMesh.FemMesh()
+    for p in m.Mesh.Points:
+        new_fm.addNode(p.x, p.y, p.z)
+    for facet in m.Mesh.Facets:
+        new_fm.addFace([idx + 1 for idx in facet.PointIndices])
+    femmesh_obj.FemMesh = new_fm
 
-    doc.recompute()
-
-    # Configure solver path explicitly if needed, but usually it finds ccx.exe in bin
-    # We will use ccxtools to run it
-    print("Preparing CalculiX solver...")
-    fea = ccxtools.CcxTools(solver)
+    # Solver Setup
+    solver = doc.getObject("CalculiX")
+    if not solver:
+        try:
+            solver = ObjectsFem.makeSolverCalculiXCcxTools(doc, "CalculiX")
+        except:
+            solver = ObjectsFem.makeSolverCalculiX(doc, "CalculiX")
+        analysis.addObject(solver)
     
-    # Check if we can write the .inp file
-    print("Writing .inp file...")
+    # Minimal settings for a quick run
+    if hasattr(solver, "GeometriesNonLinear"):
+        solver.GeometriesNonLinear = 'True'
+    elif hasattr(solver, "GeometricalNonlinearity"):
+        solver.GeometricalNonlinearity = 'nonlinear'
+    solver.IncrementsMaximum = 5 
+    
+    doc.recompute()
+    
+    print("Initializing CcxTools...")
+    fea = ccxtools.CcxTools(solver)
     fea.update_objects()
+    fea.setup_working_dir()
+    
+    print(f"Working directory: {fea.working_dir}")
+    
+    print("Writing .inp file...")
     fea.write_inp_file()
     
-    print(f"Working Directory: {fea.working_dir}")
-    print(f"Inp File: {fea.inp_file_name}")
-    
-    print("Starting CCX execution...")
-    # This runs the solver and waits for it
-    fea.ccx_run()
-    
-    print("Simulation finished. Checking for results...")
-    # Load results back into FreeCAD
-    fea.load_results()
-    
-    # Check if a Result object was created
-    results = [o for o in doc.Objects if o.TypeId == 'Fem::FemResultObjectMechanical']
-    if results:
-        print(f"Successfully created {len(results)} result object(s).")
-        # Save the document with real results
-        output_path = "ValveSpring_Real_Results.FCStd"
-        doc.saveAs(output_path)
-        print(f"Saved results to {output_path}")
-    else:
-        print("No result object found after simulation.")
-        # Check logs
-        if os.path.exists(os.path.join(fea.working_dir, fea.base_name + ".log")):
-            with open(os.path.join(fea.working_dir, fea.base_name + ".log"), "r") as f:
-                print("--- CCX LOG ---")
-                print(f.read())
+    print("Starting CCX run...")
+    # This might fail if ccx binary is not found, but we want to see the error/log
+    try:
+        fea.run()
+        print("Run finished.")
+    except Exception as e:
+        print(f"Run failed: {e}")
+        
+    # Check for log files in working directory
+    if os.path.exists(fea.working_dir):
+        files = os.listdir(fea.working_dir)
+        print(f"Files in working dir: {files}")
+        for f in files:
+            if f.endswith(".log") or f.endswith(".dat"):
+                print(f"--- Content of {f} ---")
+                with open(os.path.join(fea.working_dir, f), 'r') as log_file:
+                    print(log_file.read())
 
 if __name__ == "__main__":
-    run_real_simulation()
+    run_real_sim()
