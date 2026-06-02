@@ -1,3 +1,4 @@
+import os
 from fpdf import FPDF
 
 class PDF(FPDF):
@@ -61,7 +62,14 @@ def create_report():
         "upper coils and the retainer, which is critical for high-RPM stability.\n\n"
         "Non-linearity occurs as the spring compresses and coils with smaller pitch or "
         "radius come into contact. This reduces the number of active coils (n), "
-        "effectively increasing the spring rate (progressive characteristic)."
+        "effectively increasing the spring rate (progressive characteristic).\n\n"
+        "Stress Analysis Formulas:\n"
+        "The nominal shear stress for an elliptical cross-section is:\n"
+        "tau_nom = (16 * F * D_mean) / (pi * a * b^2)\n"
+        "The corrected maximum shear stress (including curvature effects) is:\n"
+        "tau_max = k * tau_nom\n"
+        "The Von Mises equivalent stress is:\n"
+        "sigma_vM = sqrt(3) * tau_max"
     )
     pdf.multi_cell(0, 7, theory_text)
     pdf.ln(5)
@@ -80,13 +88,37 @@ def create_report():
     pdf.cell(60, 10, "Spring Force (N)", 1, 1, 'C')
     
     # Table Data
-    forces = [
+    forces_list = [
         (0.0, 0.0), (2.0, 40.4), (4.0, 85.6), (6.0, 135.6), (8.0, 190.4),
         (10.0, 250.0), (12.0, 314.4), (14.0, 383.6), (16.0, 457.6), (18.0, 536.4), (20.0, 620.0)
     ]
-    for lift, force in forces:
+    for lift, force in forces_list:
         pdf.cell(60, 10, f"{lift:.1f}", 1, 0, 'C')
         pdf.cell(60, 10, f"{force:.1f}", 1, 1, 'C')
+    pdf.ln(5)
+
+    # Stress Analysis
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, "4.2 Stress Analysis (at Max Lift 10mm)", 0, 1)
+    pdf.set_font("Arial", size=12)
+    stress_text = (
+        "At the maximum operating lift of 10 mm (F = 250 N), the stresses were calculated "
+        "at the critical section (inner fiber of the top tapered coils)."
+    )
+    pdf.multi_cell(0, 7, stress_text)
+    pdf.ln(2)
+    
+    pdf.cell(80, 10, "Stress Type", 1, 0, 'C')
+    pdf.cell(60, 10, "Value (MPa)", 1, 1, 'C')
+    pdf.cell(80, 10, "Max Shear Stress (tau_max)", 1, 0, 'C')
+    pdf.cell(60, 10, "558.5", 1, 1, 'C')
+    pdf.cell(80, 10, "Von Mises Stress (sigma_vM)", 1, 0, 'C')
+    pdf.cell(60, 10, "967.4", 1, 1, 'C')
+    
+    pdf.ln(5)
+    # Add Stress Plot
+    if os.path.exists("stress_plot.png"):
+        pdf.image("stress_plot.png", x=10, w=180)
     pdf.ln(5)
 
     # Frequencies
