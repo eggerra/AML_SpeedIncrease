@@ -165,20 +165,39 @@ def create_report():
         pdf.image("stress_cross_section.png", x=10, w=180)
     pdf.ln(5)
 
-    # Frequencies
+    # Frequencies - Real CalculiX modal results
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "5.4 Natural Frequencies (Modal Analysis)", 0, 1)
+    pdf.cell(0, 10, "5.4 Natural Frequencies (Real CalculiX Modal Analysis)", 0, 1)
     pdf.set_font("Arial", size=12)
+    modal_text = (
+        "A frequency analysis (*FREQUENCY step) was performed with CalculiX using the same "
+        "71,907-node mesh and fixed bottom boundary condition. 10 eigenmodes were extracted."
+    )
+    pdf.multi_cell(0, 7, modal_text)
+    pdf.ln(2)
+    pdf.cell(20, 10, "Mode", 1, 0, 'C')
+    pdf.cell(50, 10, "Freq (Hz)", 1, 0, 'C')
+    pdf.cell(50, 10, "Freq (rpm)", 1, 0, 'C')
+    pdf.cell(50, 10, "Margin vs 125Hz", 1, 1, 'C')
     freqs = [
-        ("1st Harmonic", "485.20 Hz"),
-        ("2nd Harmonic", "970.40 Hz"),
-        ("3rd Harmonic", "1455.60 Hz"),
-        ("4th Harmonic", "1940.80 Hz"),
-        ("5th Harmonic", "2426.00 Hz")
+        (1,  92.36,   5541.6),
+        (2,  92.69,   5561.3),
+        (3, 206.83,  12409.8),
+        (4, 273.35,  16401.0),
+        (5, 423.26,  25395.6),
+        (6, 425.51,  25530.6),
+        (7, 620.34,  37220.4),
+        (8, 803.95,  48237.0),
+        (9, 917.55,  55053.0),
+        (10, 924.76, 55485.6),
     ]
-    for mode, freq in freqs:
-        pdf.cell(60, 10, mode, 1, 0, 'C')
-        pdf.cell(60, 10, freq, 1, 1, 'C')
+    for mode, fhz, frpm in freqs:
+        margin = fhz / 125.0
+        flag = " !!" if margin < 1.0 else (" !" if margin < 3.0 else "")
+        pdf.cell(20, 10, str(mode), 1, 0, 'C')
+        pdf.cell(50, 10, f"{fhz:.2f}", 1, 0, 'C')
+        pdf.cell(50, 10, f"{frpm:.1f}", 1, 0, 'C')
+        pdf.cell(50, 10, f"{margin:.2f}x{flag}", 1, 1, 'C')
     
     # Real CCX stress progression table
     pdf.set_font("Arial", 'B', 12)
@@ -202,9 +221,11 @@ def create_report():
 
     pdf.ln(5)
     resonance_text = (
-        "At 7500 rpm, the excitation frequency is 125 Hz. The first natural frequency "
-        "(485.2 Hz) is approximately 3.88 times the engine frequency, ensuring no "
-        "resonance/surge issues at max engine speed."
+        "CRITICAL FINDING: The 1st natural frequency (92.36 Hz) is BELOW the engine "
+        "excitation frequency at 7500 rpm (125 Hz). This means the spring is at risk "
+        "of resonance/surge at the target engine speed. The spring design must be "
+        "stiffened (larger wire diameter or fewer active coils) to raise the 1st natural "
+        "frequency above 125 Hz (ideally above 375 Hz for a 3x safety margin)."
     )
     pdf.multi_cell(0, 7, resonance_text)
 
@@ -217,8 +238,12 @@ def create_report():
         "The CAD model and real CalculiX FEA simulation (71,907 nodes, 37,504 C3D10 elements) "
         "confirm that the beehive valve spring provides a progressive spring rate of ~22.2 N/mm. "
         "The maximum Von Mises stress of 857.8 MPa at 10 mm lift gives a safety factor of 2.6 "
-        "against the material tensile strength (2200 MPa). The first natural frequency of 485.2 Hz "
-        "is 3.88x the engine excitation frequency at 7500 rpm, confirming full dynamic stability."
+        "against the material tensile strength (2200 MPa). "
+        "CRITICAL: The modal analysis reveals that the 1st natural frequency (92.36 Hz) is "
+        "BELOW the engine excitation frequency at 7500 rpm (125 Hz), indicating a resonance "
+        "risk. A redesign is required to raise the 1st natural frequency above 375 Hz "
+        "(3x safety margin). Recommended measures: increase wire diameter, reduce active coils, "
+        "or use a stiffer material grade."
     )
     pdf.multi_cell(0, 7, conclusion_text)
 
