@@ -24,6 +24,12 @@ This project contains the CAD modeling and FEA setup for an Intake Valve Spring 
 #### FEA Results (Spring characteristic)
 The non-linear simulation was performed using CalculiX, accounting for the beehive geometry and coil contact.
 
+### FEA Boundary Conditions
+To simulate the operational compression of the valve spring, specific boundary conditions (BCs) were applied to the ground ends:
+1. **Fixed Support (Bottom):** The bottom ground surface (at Z = 0) is fully constrained in all degrees of freedom (X, Y, Z translations and rotations).
+2. **Displacement Constraint (Top):** The top ground surface (at Z = 46.1 mm) is subjected to a prescribed vertical displacement (0-20mm). Lateral movement (X and Y) is constrained to 0 to simulate retainer guidance.
+3. **Contact Interactions:** A surface-to-surface contact interaction is defined between the coils to capture the non-linear progressive stiffness as coils meet.
+
 **Force vs. Displacement (Valve Lift):**
 | Valve Lift (mm) | Spring Force (N) |
 | :--- | :--- |

@@ -74,13 +74,40 @@ def create_report():
     pdf.multi_cell(0, 7, theory_text)
     pdf.ln(5)
 
+    # Boundary Conditions
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "4. FEA Boundary Conditions", 0, 1)
+    pdf.set_font("Arial", size=12)
+    bc_text = (
+        "To simulate the operational compression of the valve spring, specific "
+        "boundary conditions (BCs) were applied to the ground ends of the model.\n\n"
+        "1. Fixed Support (Bottom):\n"
+        "The bottom ground surface (at Z = 0) is fully constrained in all degrees "
+        "of freedom (X, Y, Z translation and rotations). This represents the spring "
+        "seating against the stationary cylinder head.\n\n"
+        "2. Displacement Constraint (Top):\n"
+        "The top ground surface (at Z = 46.1 mm) is subjected to a prescribed "
+        "vertical displacement. For the non-linear characteristic analysis, this "
+        "displacement was varied from 0 mm to 20 mm. To maintain stability, the "
+        "lateral movement (X and Y) was constrained to 0, representing the "
+        "guidance provided by the valve spring retainer.\n\n"
+        "3. Contact Interactions:\n"
+        "A surface-to-surface contact interaction was defined between the coils. "
+        "As the spring compresses, the decreasing pitch in the beehive section "
+        "causes the coils to meet, which is the physical source of the progressive "
+        "stiffness characteristic."
+    )
+    pdf.multi_cell(0, 7, bc_text)
+    pdf.ln(10)
+
     # Simulation Results
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "4. Simulation Results", 0, 1)
+    pdf.cell(0, 10, "5. Simulation Results", 0, 1)
     
     # Force Table
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "4.1 Force-Displacement Characteristic", 0, 1)
+    pdf.cell(0, 10, "5.1 Force-Displacement Characteristic", 0, 1)
     pdf.set_font("Arial", size=12)
     
     # Table Header
@@ -99,7 +126,7 @@ def create_report():
 
     # Stress Analysis
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "4.2 Stress Analysis (at Max Lift 10mm)", 0, 1)
+    pdf.cell(0, 10, "5.2 Stress Analysis (at Max Lift 10mm)", 0, 1)
     pdf.set_font("Arial", size=12)
     stress_text = (
         "At the maximum operating lift of 10 mm (F = 250 N), the stresses were calculated "
@@ -125,7 +152,7 @@ def create_report():
     if os.path.exists("stress_cross_section.png"):
         pdf.add_page() # New page for cross-section detail
         pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 10, "4.3 Cross-Section Stress Distribution (at 10mm lift)", 0, 1)
+        pdf.cell(0, 10, "5.3 Cross-Section Stress Distribution (at 10mm lift)", 0, 1)
         pdf.set_font("Arial", size=12)
         dist_text = (
             "The plot below shows the calculated stress distribution across the oval "
@@ -138,7 +165,7 @@ def create_report():
 
     # Frequencies
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "4.2 Natural Frequencies (Modal Analysis)", 0, 1)
+    pdf.cell(0, 10, "5.4 Natural Frequencies (Modal Analysis)", 0, 1)
     pdf.set_font("Arial", size=12)
     freqs = [
         ("1st Harmonic", "485.20 Hz"),
@@ -162,7 +189,7 @@ def create_report():
     # Conclusion
     pdf.ln(10)
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "5. Conclusion", 0, 1)
+    pdf.cell(0, 10, "6. Conclusion", 0, 1)
     pdf.set_font("Arial", size=12)
     conclusion_text = (
         "The CAD model and FEA simulation confirm that the current spring design matches "
