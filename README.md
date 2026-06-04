@@ -1,130 +1,121 @@
-# Intake Valve Spring Analysis — A1770530500
-## V12 ICE Engine — Speed Increase from 7000 to 7500 rpm
+# Valve Spring FEA — A177 053 05 00 (AML Intake, Beehive)
+
+Engineering analysis of the Scherdel beehive valve spring using open-source tools:
+parametric CAD (pythonOCC / FreeCAD), Gmsh meshing, and CalculiX FEA.
 
 ---
 
-## 1. Project Overview
+## Drawing specification
 
-This project documents the CAD modeling and Finite Element Analysis (FEA) of the intake valve spring (Part A1770530500) for a V12 ICE engine. The goal is to verify the spring's suitability for an increased engine speed of **7500 rpm** (up from 7000 rpm).
-
----
-
-## 2. Spring Specifications (from Drawing)
-
-| Parameter | Value |
-|:---|:---|
-| Wire shape | Oval: 2.92 × 3.66 mm |
-| Spring shape | Beehive (cylindrical body + tapered top) |
-| Free length L0 | 46.1 mm |
-| Installation length L1 | 33.10 mm |
-| Max working length L2 | 25.10 mm |
-| Solid length Lc | 24.50 mm |
-| Total coils nt | 8.6 |
-| Active coils n | 4.4 – 3.0 |
-| Install load F1 | 250 ±12 N at L1 |
-| Max load F2 | 620 ±27 N at L2 |
-| Max valve lift | 10 mm |
-| Material | ND SiCrNiV SC |
-| Shear modulus G | 79,500 N/mm² |
-| End condition | Both ends ground and parallel |
-| Winding direction | Right hand |
+| Symbol | Parameter | Value | Unit |
+|--------|-----------|-------|------|
+| d | Wire (axial × radial) | 2.92 × 3.66 | mm |
+| Dio / Diu | Inner Ø top / bottom | 12.00 / 15.90 | mm |
+| Deo / Deu | Outer Ø top / bottom | 19.32 / 23.22 | mm |
+| L0 | Free length | 46.1 | mm |
+| L1 | Installed length | 36.10 | mm |
+| L2 | Max working length | 26.10 | mm |
+| F1 | Spring force @ L1 | 250 ± 12 | N |
+| F2 | Spring force @ L2 | 620 ± 27 | N |
+| nt | Total coils | 8.6 | — |
+| n | Active coils (L1 / L2) | 4.4 / 3.1 | — |
+| G | Shear modulus | 79 500 | N/mm² |
+| Material | VD SiCrNi SC | DIN 17 223 | — |
 
 ---
 
-## 3. CAD Model (`ValveSpring.FCStd`)
+## Spring rate — progressive behaviour
 
-Generated with `generate_spring.py` using FreeCAD's Python API:
+The spring is a **beehive (Bienenkorb)** design with oval wire and **variable pitch**:
+tight pitch at the small-diameter top end, wider pitch at the large-diameter bottom end.
+As the spring compresses, the top (small-Ø) coils contact first and become inactive,
+progressively stiffening the characteristic.
 
-- **Beehive geometry:** Constant radius for first 6.0 coils, linearly tapering to smaller radius for final 2.6 coils
-- **Oval wire:** Elliptical cross-section (3.66 mm axial × 2.92 mm radial) swept along a 400-point B-Spline helix
-- **Ground ends:** Boolean cuts at Z = 0.75 mm (bottom) and Z = 45.35 mm (top) to create flat parallel seating surfaces
-- **Volume:** 4,075 mm³
+| Phase | Compression | Active coils (na) | Rate |
+|-------|-------------|-------------------|------|
+| 1 | 0 → 10 mm | 6.1 → 4.4 | 25 N/mm |
+| 2 | 10 → 20 mm | 4.4 → 3.1 | 37 N/mm |
 
----
+Rates calibrated to drawing reference points F1 and F2.
 
-## 4. FEA Setup (`ValveSpring_FEA.FCStd`)
-
-Generated with `run_fea.py` using FreeCAD + Gmsh + CalculiX:
-
-### 4.1 Mesh
-- **Mesher:** Gmsh (2nd order tetrahedral elements, C3D10)
-- **Nodes:** 72,748
-- **Volume elements:** 38,360
-- **Element size:** 0.8–2.0 mm
-
-### 4.2 Boundary Conditions
-
-| BC | Location | Constraint |
-|:---|:---|:---|
-| Fixed support | Bottom ground face (Z = 0.75 mm) | All DOF fixed (UX=UY=UZ=0) |
-| Displacement | Top ground face (Z = 45.35 mm) | UZ = −10 mm (max valve lift), UX=UY=0 |
-
-### 4.3 Solver Settings
-- **Solver:** CalculiX (ccx.exe)
-- **Analysis type:** Static, geometrically nonlinear
-- **Increments:** 7 increments (time 0.1 → 1.0)
-- **Initial increment:** 0.1, Min: 0.01, Max: 0.2
+**FEA elastic rate:** 22–23 N/mm (all coils active, no contact mechanics).
+The gap between FEA and drawing rate is expected: solid-element FEA without
+self-contact cannot capture coil binding. The analytical model (see plot) reproduces
+the drawing values exactly.
 
 ---
 
-## 5. FEA Results
-
-### 5.1 Force vs. Valve Lift (Real CalculiX Results)
-
-| Increment | Lift (mm) | Fz (N) | Spring Rate (N/mm) |
-|:---|:---|:---|:---|
-| 1 | 1.0 | 22.9 | 22.9 |
-| 2 | 2.0 | 45.7 | 22.9 |
-| 3 | 3.5 | 80.0 | 22.9 |
-| 4 | 5.5 | 125.6 | 22.8 |
-| 5 | 7.5 | 171.0 | 22.8 |
-| 6 | 9.5 | 216.4 | 22.8 |
-| **7** | **10.0** | **227.7** | **22.8** |
-
-- **Measured spring rate:** ~22.8 N/mm
-- **Drawing spec:** F1 = 250 ±12 N at 10 mm lift
-- **Note:** The 22 N difference is due to the absence of pre-load (installation pre-compression) in the model. The spring rate matches well.
-
-### 5.2 Von Mises Stress
-
-Peak Von Mises stress at full 10 mm lift: **~858 MPa**
-- Location: Inner fiber of the upper tapered coils
-- Material tensile strength Rm ≈ 2,200 MPa
-- **Safety factor: 2.6**
-
----
-
-## 6. How to View Results in FreeCAD
-
-1. Open `ValveSpring_FEA.FCStd` in FreeCAD 1.1
-2. Switch workbench to **FEM**
-3. In the Tree View, expand **`Analysis`**
-4. **Double-click `Pipeline_CCX_Time_1_0_Results`**
-5. In the toolbar select **`Von Mises Stress`** from the field dropdown
-
-Available result increments:
-- `CCX_Time_0_1_Results` → 1.0 mm lift
-- `CCX_Time_0_2_Results` → 2.0 mm lift
-- `CCX_Time_0_35_Results` → 3.5 mm lift
-- `CCX_Time_0_55_Results` → 5.5 mm lift
-- `CCX_Time_0_75_Results` → 7.5 mm lift
-- `CCX_Time_0_95_Results` → 9.5 mm lift
-- `CCX_Time_1_0_Results` → **10.0 mm lift (full load)**
-
----
-
-## 7. Files
+## Files
 
 | File | Description |
-|:---|:---|
-| `A1770530500_4_Intake_Valve_Spring.tif` | Original engineering drawing |
-| `ValveSpring.FCStd` | CAD model (beehive spring, oval wire, ground ends) |
-| `ValveSpring_FEA.FCStd` | FEA model with mesh, BCs, solver, and results |
-| `generate_spring.py` | Script to regenerate CAD model |
-| `run_fea.py` | Script to regenerate mesh, run CalculiX, load results |
+|------|-------------|
+| `generate_spring.py` | Parametric CAD generator (pythonOCC). Implements variable pitch via `helix_z()`. |
+| `mesh_spring.py` | FreeCAD/GmshTools mesher (Tet10, 2nd order). Run with `FreeCADCmd.exe`. |
+| `spring_analysis.py` | CalculiX FEA setup + result parsing + progressive-rate analytical model. |
+| `ValveSpring.step` | STEP CAD model (variable-pitch beehive helix, ground ends). |
+| `ValveSpring.stl` | STL for visualisation. |
+| `ValveSpring_mesh.inp` | Gmsh Tet10 mesh for CalculiX (C3D10 elements). |
+| `ValveSpring_fea.inp` | CalculiX input deck (NLGEOM static, 0–20 mm compression). |
+| `ValveSpring_fea.dat` | CalculiX reaction-force results. |
+| `spring_FvL.png` | Force vs lift plot (FEA + analytical + drawing references). |
+| `spring_drawing.png` | Original Scherdel drawing scan. |
 
 ---
 
-## 8. Repository
+## Variable-pitch CAD model
 
-[https://github.com/eggerra/AML_SpeedIncrease](https://github.com/eggerra/AML_SpeedIncrease)
+`generate_spring.py` implements a non-linear `helix_z(coil_num)` function:
+
+```
+                          Active zone: quadratic pitch gradient
+Bottom dead end           |                               | Top dead end
+[1.25 coils, wire_a pitch]|  p_bot=7.76 mm → p_top=4.96 mm  |[1.25 coils, wire_a pitch]
+                          |  D_pitch = 0.22                 |
+```
+
+The distribution uses `f(xi) = xi + D_pitch * xi * (1 - xi)` where xi ∈ [0,1]
+goes from bottom to top of the active zone:
+
+- `f'(0) = 1 + D_pitch` → large pitch at bottom (large Ø, binds last)
+- `f'(1) = 1 - D_pitch` → small pitch at top (small Ø, binds first)
+
+`D_pitch = 0.22` maintains a minimum coil gap of ~2 mm, needed for Gmsh
+to generate valid Tet10 volume elements.
+
+---
+
+## Running the pipeline
+
+```bash
+# 1. Generate CAD (system Python with pythonOCC / OCP)
+python generate_spring.py
+
+# 2. Mesh (FreeCAD 1.1 Python environment)
+FreeCADCmd.exe mesh_spring.py
+
+# 3. FEA + plot
+python spring_analysis.py
+```
+
+Dependencies: pythonOCC (OCP), FreeCAD 1.1 (includes Gmsh 4.15 and CalculiX 2.22),
+numpy, matplotlib.
+
+---
+
+## FEA setup
+
+- **Elements:** C3D10 (10-node quadratic tetrahedra)
+- **Material:** E = 206 000 MPa, nu = 0.30 (VD SiCrNi SC)
+- **BCs:** Bottom face fully fixed; top face compressed 0 → 20 mm (1 mm increments)
+- **Analysis:** NLGEOM static (large-displacement nonlinear)
+- **Reaction forces:** Summed at bottom node set (NBOT), parsed from `.dat`
+
+---
+
+## Result — spring_FvL.png
+
+![Force vs Lift](spring_FvL.png)
+
+The green analytical curve (calibrated to drawing) passes through both
+drawing reference points. The blue FEA gives the linear elastic rate
+without coil-binding contact mechanics.
