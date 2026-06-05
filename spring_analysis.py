@@ -1,9 +1,10 @@
 """
-spring_analysis.py  -  Valve spring FEA: Force vs Lift
+spring_analysis.py  -  Valve spring FEA: Force vs Lift  (with self-contact)
 
 Reads ValveSpring_mesh.inp (exported by mesh_spring.py),
-identifies top/bottom face nodes, writes a CalculiX input file,
-runs the solver, parses reaction forces, and plots the F-L characteristic.
+identifies top/bottom face nodes, writes a CalculiX input file with
+self-contact to capture coil binding, runs the solver, parses reaction
+forces, and plots the F-L characteristic.
 
 Prerequisite:  run mesh_spring.py first.
 """
@@ -151,9 +152,9 @@ def nset_block(name, ids, chunk=16):
 
 print(f"\n  Writing: {FULL_INP}")
 with open(FULL_INP, "w") as f:
-    f.write("** ValveSpring FEA - Force vs Lift\n")
+    f.write("** ValveSpring FEA - Force vs Lift (with self-contact for coil binding)\n")
     f.write(f"** Material: VD SiCrNi SC  E={E_MOD} MPa  nu={NU}\n")
-    f.write(f"** Compression ramp 0 -> {MAX_LIFT} mm  (1 mm increments)\n**\n")
+    f.write(f"** Compression ramp 0 -> {MAX_LIFT} mm  (0.5 mm increments, contact)\n**\n")
 
     # Mesh
     f.write(f"*INCLUDE, INPUT={os.path.basename(MESH_INP)}\n**\n")
@@ -170,9 +171,24 @@ with open(FULL_INP, "w") as f:
     # Solid section (C3D10 elements)
     f.write(f"*SOLID SECTION, ELSET={elset}, MATERIAL=SPRING_STEEL\n**\n")
 
-    # Step: nonlinear static, time = lift in mm
-    f.write("*STEP, NLGEOM, INC=200\n")
-    f.write(f"*STATIC\n1.0, {MAX_LIFT:.1f}, 0.1, 1.0\n**\n")
+    # Self-contact: all 4 faces of each C3D10 tet element; CalculiX automatically
+    # ignores internally-shared faces during contact detection, leaving only the
+    # free (outer) surface of the coil active for coil-binding contact.
+    f.write("** Self-contact surface: all 4 faces of each C3D10 tet\n")
+    f.write(f"*SURFACE, NAME=SPRING_SURF, TYPE=ELEMENT\n")
+    for face in ("S1", "S2", "S3", "S4"):
+        f.write(f"{elset}, {face}\n")
+    f.write("** Contact pair: same surface on both sides = self-contact\n")
+    f.write("*CONTACT PAIR, INTERACTION=COIL_CONTACT, TYPE=SURFACE TO SURFACE\n")
+    f.write("SPRING_SURF, SPRING_SURF\n")
+    f.write("*SURFACE INTERACTION, NAME=COIL_CONTACT\n")
+    f.write("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD\n")
+    f.write("** Steel-on-steel friction (dry): mu=0.12, stick slope 1e-3 mm\n")
+    f.write("*FRICTION\n0.12, 1.E-3\n**\n")
+
+    # Step: nonlinear static with contact, smaller increments for convergence
+    f.write("*STEP, NLGEOM, INC=500\n")
+    f.write(f"*STATIC\n0.5, {MAX_LIFT:.1f}, 0.01, 1.0\n**\n")
 
     # Boundary conditions
     f.write("** Bottom face: fully fixed\n*BOUNDARY\nNBOT, 1, 3, 0.0\n")
@@ -183,7 +199,9 @@ with open(FULL_INP, "w") as f:
     f.write("*NODE PRINT, NSET=NBOT, TOTALS=YES, FREQUENCY=1\nRF\n")
     # Displacement + stress fields for visualisation (every 5 mm)
     f.write("*NODE FILE, FREQUENCY=5\nU\n")
-    f.write("*EL FILE, FREQUENCY=5\nS\n**\n")
+    f.write("*EL FILE, FREQUENCY=5\nS\n")
+    # Contact pressure output
+    f.write("*CONTACT FILE, FREQUENCY=5\nCSTRESS, CDISP\n**\n")
 
     f.write("*END STEP\n")
 
@@ -288,7 +306,7 @@ print(f"  Force  : {forces.min():.0f} - {forces.max():.0f} N")
 # 5. PLOT
 # =============================================================================
 fig, ax = plt.subplots(figsize=(9, 5))
-ax.plot(lifts, forces, "b-o", ms=4, linewidth=1.8, label="CalculiX FEA (NLGEOM, Tet10)")
+ax.plot(lifts, forces, "b-o", ms=4, linewidth=1.8, label="CalculiX FEA (NLGEOM, Tet10, self-contact)")
 
 for lift_r, force_r, lbl in REF:
     ax.axvline(lift_r, color="gray", linestyle=":", linewidth=0.8, alpha=0.5)

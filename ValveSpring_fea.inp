@@ -1,6 +1,6 @@
-** ValveSpring FEA - Force vs Lift
+** ValveSpring FEA - Force vs Lift (with self-contact for coil binding)
 ** Material: VD SiCrNi SC  E=206000.0 MPa  nu=0.3
-** Compression ramp 0 -> 20.0 mm  (1 mm increments)
+** Compression ramp 0 -> 20.0 mm  (0.5 mm increments, contact)
 **
 *INCLUDE, INPUT=ValveSpring_mesh.inp
 **
@@ -50,9 +50,24 @@
 **
 *SOLID SECTION, ELSET=EVOLUMES, MATERIAL=SPRING_STEEL
 **
-*STEP, NLGEOM, INC=200
+** Self-contact surface: all 4 faces of each C3D10 tet
+*SURFACE, NAME=SPRING_SURF, TYPE=ELEMENT
+EVOLUMES, S1
+EVOLUMES, S2
+EVOLUMES, S3
+EVOLUMES, S4
+** Contact pair: same surface on both sides = self-contact
+*CONTACT PAIR, INTERACTION=COIL_CONTACT, TYPE=SURFACE TO SURFACE
+SPRING_SURF, SPRING_SURF
+*SURFACE INTERACTION, NAME=COIL_CONTACT
+*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=HARD
+** Steel-on-steel friction (dry): mu=0.12, stick slope 1e-3 mm
+*FRICTION
+0.12, 1.E-3
+**
+*STEP, NLGEOM, INC=500
 *STATIC
-1.0, 20.0, 0.1, 1.0
+0.5, 20.0, 0.01, 1.0
 **
 ** Bottom face: fully fixed
 *BOUNDARY
@@ -67,5 +82,7 @@ RF
 U
 *EL FILE, FREQUENCY=5
 S
+*CONTACT FILE, FREQUENCY=5
+CSTRESS, CDISP
 **
 *END STEP
