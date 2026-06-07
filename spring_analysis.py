@@ -70,7 +70,9 @@ REF = [
 ]
 
 # -- Analytical progressive spring rate model ----------------------------------
-# Beehive spring with variable pitch: top/small-OD coils bind first.
+# Beehive spring with variable pitch: bottom/large-OD coils bind first.
+# As large-OD coils go inactive, remaining active coils are the stiffer small-OD
+# top coils -> spring rate increases (progressive behaviour).
 # Drawing data (A177 053 05 00):
 #   na at L1 (s=10mm) = 4.4 active coils  -> 1.7 of 6.1 coils have bound
 #   na at L2 (s=20mm) = 3.1 active coils  -> 1.3 more bind between L1 and L2

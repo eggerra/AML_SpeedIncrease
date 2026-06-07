@@ -4,12 +4,13 @@ Drawing parameters: oval wire 2.92x3.66mm, beehive profile, 8.6 coils
 
 Pitch is NON-UNIFORM (progressive):
   - Bottom n_closed coils : dead/closed (wire touching, zero gap)
-  - Active zone           : quadratic pitch gradient, large pitch at large-OD bottom,
-                            tight pitch at small-OD top  ->  top coils bind first
+  - Active zone           : quadratic pitch gradient, small pitch at large-OD bottom,
+                            large pitch at small-OD top  ->  bottom coils bind first
   - Top n_closed coils    : dead/closed
 
-This reproduces the drawing's active-coil count (4.4 at L1, 3.1 at L2) and
-yields a progressive spring rate consistent with F1=250N / F2=620N.
+Bottom coils (large OD, softer) bind first as the spring is compressed.
+The remaining active coils are the stiffer small-OD top coils, producing an
+increasing spring rate (progressive behaviour) consistent with F1=250N / F2=620N.
 """
 import math
 import sys
@@ -33,20 +34,21 @@ h_closed   = n_closed * wire_a          # = 3.650 mm per dead end
 h_active   = L0 - 2 * h_closed         # = 38.800 mm active zone height
 pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
 
-# D_pitch controls the pitch gradient.  D_pitch > 0 -> more pitch at bottom
-# (large OD), less at top (small OD).  Constraint: D_pitch < 1.
+# D_pitch controls the pitch gradient.  D_pitch > 0 -> less pitch at bottom
+# (large OD), more pitch at top (small OD).  Constraint: D_pitch < 1.
 # Effective pitches:
-#   p_bot  = pitch_mean * (1 + D_pitch)   <- large-OD coils, bind last
-#   p_top  = pitch_mean * (1 - D_pitch)   <- small-OD coils, bind first
-# Drawing implies ~1.7 top coils bind before L1 (10 mm compression) and
-# ~1.3 more coils bind before L2 (20 mm compression).
-# D_pitch = 0.22  ->  p_top ~ 4.96 mm (gap 2.04 mm), p_bot ~ 7.76 mm
-# Min gap kept >= 2 mm so Gmsh Delaunay mesher can build valid Tet10 elements.
-# Binding physics is captured analytically (spring_analysis.py) independent of D_pitch.
+#   p_bot  = pitch_mean * (1 - D_pitch)   <- large-OD coils, small gap -> bind first
+#   p_top  = pitch_mean * (1 + D_pitch)   <- small-OD coils, large gap -> bind last
+# Drawing implies ~1.7 bottom coils bind before L1 (10 mm compression) and
+# ~1.3 more bind before L2 (20 mm compression).
+# D_pitch = 0.22  ->  p_bot ~ 4.96 mm (gap 2.04 mm), p_top ~ 7.76 mm
+# Pitch ratio 7.76/4.96 = 1.57x — clearly visible progressive gradient.
+# Gap at bottom (2.04 mm, large-OD) is the same absolute size as the old
+# tight-top design (2.04 mm, small-OD) which meshed successfully.
 D_pitch    = 0.22
 
-p_top  = pitch_mean * (1 - D_pitch)
-p_bot  = pitch_mean * (1 + D_pitch)
+p_bot  = pitch_mean * (1 - D_pitch)
+p_top  = pitch_mean * (1 + D_pitch)
 
 print("=== Valve Spring CAD Generator ===")
 print(f"  Wire:        {wire_a} x {wire_r} mm (axial x radial)")
@@ -54,7 +56,7 @@ print(f"  R_mean:      {R_mean_bot:.3f} mm (bottom) -> {R_mean_top:.3f} mm (top)
 print(f"  OD:          {Di_bot + wire_r:.2f} mm (bottom) -> {Di_top + wire_r:.2f} mm (top)")
 print(f"  Total coils: {nt},  closed ends: {n_closed} each,  active: {n_active}")
 print(f"  L0={L0} mm,  h_active={h_active:.2f} mm,  pitch_mean={pitch_mean:.3f} mm")
-print(f"  Pitch range: {p_top:.2f} mm (top/small-OD) -> {p_bot:.2f} mm (bot/large-OD)")
+print(f"  Pitch gradient: {p_bot:.2f} mm (bot/large-OD) -> {p_top:.2f} mm (top/small-OD)  ratio={p_top/p_bot:.2f}x")
 
 # Beehive profile: cylindrical section at bottom, linear taper toward top.
 n_cyl_end  = 3.0   # coils at full bottom diameter before taper begins
@@ -90,12 +92,12 @@ def helix_z(coil_num):
     Variable-pitch axial position.
 
     Dead (closed) coils at both ends use wire_a pitch (coils touching).
-    The active zone uses a quadratic distribution biased toward the bottom
-    (large-OD coils have more pitch, small-OD top coils have less pitch).
+    The active zone uses a quadratic distribution: small pitch at large-OD
+    bottom (bottom coils bind first), increasing to large pitch at small-OD top.
 
-    f(xi) = xi + D_pitch * xi * (1 - xi)   [xi in [0,1], bottom->top]
-    => f'(0) = 1 + D_pitch  (high pitch at bottom)
-    => f'(1) = 1 - D_pitch  (low pitch at top)
+    f(xi) = xi - D_pitch * xi * (1 - xi)   [xi in [0,1], bottom->top]
+    => f'(0) = 1 - D_pitch  (low pitch at bottom -> bottom coils bind first)
+    => f'(1) = 1 + D_pitch  (high pitch at top -> top coils bind last)
     """
     if coil_num <= n_closed:
         return coil_num * wire_a
@@ -103,7 +105,7 @@ def helix_z(coil_num):
         return L0 - (nt - coil_num) * wire_a
     else:
         xi = (coil_num - n_closed) / n_active   # 0 = bottom, 1 = top of active zone
-        f  = xi + D_pitch * xi * (1 - xi)
+        f  = xi - D_pitch * xi * (1 - xi)
         return h_closed + f * h_active
 
 

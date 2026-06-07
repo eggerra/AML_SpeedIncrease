@@ -62,7 +62,6 @@ log(f"  Nodes={n_nodes:,}  VolElems={n_elems:,}")
 
 if n_elems == 0:
     log("ERROR: no volume elements - trying coarser mesh")
-    # Retry with coarser settings
     mesh_obj.CharacteristicLengthMax = "2.0 mm"
     mesh_obj.CharacteristicLengthMin = "0.8 mm"
     doc.recompute()
