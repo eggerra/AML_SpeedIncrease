@@ -28,7 +28,7 @@ Data source
 import sys, os, re, json, itertools
 import numpy as np
 
-from PySide6.QtCore import Qt, QMimeData, QByteArray, QThread, Signal
+from PySide6.QtCore import Qt, QMimeData, QByteArray, QTimer, QThread, Signal
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QScrollArea, QLabel, QFrame, QComboBox, QPushButton, QSplitter,
@@ -220,10 +220,9 @@ def build_catalog(rpm_folder_path):
 
 
 # ── All-RPM catalog loader thread ─────────────────────────────────────────────
-# Loads all 6 RPM result directories in one background pass and returns a
-# merged catalog:  {cat_name: [tiles…]}  where every tile carries rpm info.
 class AllRpmLoader(QThread):
-    done = Signal(dict)
+    # Use Signal(object) for robust cross-thread marshaling of arbitrary dicts
+    done = Signal(object)
 
     def run(self):
         merged = {}
@@ -332,7 +331,7 @@ class TilePanel(QWidget):
         self.inner_layout = QVBoxLayout(self.inner)
         self.inner_layout.setContentsMargins(0, 0, 4, 0)
         self.inner_layout.setSpacing(0)
-        self.inner_layout.addStretch()
+        self.inner_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.scroll.setWidget(self.inner)
         layout.addWidget(self.scroll)
 
@@ -349,7 +348,6 @@ class TilePanel(QWidget):
             for t in catalog.get(cat_name, []):
                 by_speed.setdefault(t["rpm"], {}).setdefault(cat_name, []).append(t)
 
-        pos = 0
         for rpm in sorted(by_speed):
             bg, border = RPM_TILE_COLORS.get(rpm, ("#f0f4f8", "#c8d0da"))
 
@@ -361,7 +359,7 @@ class TilePanel(QWidget):
                 f"color:#fff; background:{border}; padding:2px 6px;"
                 "margin-top:8px; border-radius:3px;"
             )
-            self.inner_layout.insertWidget(pos, spd_hdr); pos += 1
+            self.inner_layout.addWidget(spd_hdr)
 
             for cat_name in FOCUS_CATEGORIES:
                 tiles = by_speed[rpm].get(cat_name, [])
@@ -375,9 +373,9 @@ class TilePanel(QWidget):
                     f"color:{tc}; background:{tbg}; padding-left:8px;"
                     "margin-top:2px;"
                 )
-                self.inner_layout.insertWidget(pos, cat_hdr); pos += 1
+                self.inner_layout.addWidget(cat_hdr)
                 for t in tiles:
-                    self.inner_layout.insertWidget(pos, TileWidget(t)); pos += 1
+                    self.inner_layout.addWidget(TileWidget(t))
 
 
 # ── Plot canvas ───────────────────────────────────────────────────────────────
