@@ -150,22 +150,33 @@ def make_fig_layout():
     box(0.2, 0.2, 2.8, 4.2, "#F5F5F5", "#607D8B")
     ax.text(1.6, 4.15, "Results Browser", ha="center", fontsize=8, fontweight="bold", color="#263238")
 
-    # Category headers
-    for i, (cat, col) in enumerate([("Valve Lift", "#1565C0"),
-                                     ("Contact Pressure", "#B71C1C"),
-                                     ("Spring Force", "#E65100")]):
-        y0 = 3.6 - i * 1.1
-        box(0.25, y0, 2.7, 0.28, col, col)
-        ax.text(1.6, y0 + 0.14, cat, ha="center", va="center",
-                fontsize=7, color="white", fontweight="bold")
-        # RPM tiles
-        rpm_cols = ["#E3F2FD", "#E8F5E9", "#FFF3E0", "#F3E5F5", "#FFEBEE", "#E0F7FA"]
-        borders  = ["#1565C0", "#2E7D32", "#E65100", "#6A1B9A", "#B71C1C", "#006064"]
-        for j, (bg, bd) in enumerate(zip(rpm_cols, borders)):
-            tx = 0.27 + j * 0.44
-            box(tx, y0 - 0.65, 0.40, 0.55, bg, bd, 1.0)
-            ax.text(tx + 0.20, y0 - 0.38, f"{7000+j*100}", ha="center",
-                    va="center", fontsize=5.5, color=bd)
+    # Speed top-level headers, each containing Valve Lift + Contact Pressure
+    speed_cfg = [
+        (7000, "#1565C0", "#E3F2FD"),
+        (7100, "#2E7D32", "#E8F5E9"),
+        (7200, "#E65100", "#FFF3E0"),
+    ]
+    for i, (rpm, border, bg) in enumerate(speed_cfg):
+        y0 = 3.55 - i * 1.18
+        # Speed header bar
+        box(0.25, y0, 2.7, 0.26, border, border)
+        ax.text(1.6, y0 + 0.13, f"{rpm} rpm", ha="center", va="center",
+                fontsize=7.5, color="white", fontweight="bold")
+        # Valve Lift sub-header + tiles
+        box(0.28, y0 - 0.22, 2.64, 0.18, "#E3F2FD", "#1565C0", 0.8)
+        ax.text(0.60, y0 - 0.13, "Valve Lift", va="center", fontsize=6, color="#1565C0")
+        for k in range(4):
+            box(0.29 + k * 0.64, y0 - 0.54, 0.60, 0.28, bg, border, 0.8)
+            ax.text(0.59 + k * 0.64, y0 - 0.40, f"VAFA{k+1}", ha="center",
+                    va="center", fontsize=5, color=border)
+        # Contact Pressure sub-header + tiles
+        box(0.28, y0 - 0.62, 2.64, 0.18, "#FFEBEE", "#B71C1C", 0.8)
+        ax.text(0.60, y0 - 0.53, "Contact Pressure", va="center", fontsize=6, color="#B71C1C")
+        for k in range(4):
+            box(0.29 + k * 0.64, y0 - 0.94, 0.60, 0.28, "#FFEBEE", "#B71C1C", 0.8)
+            ax.text(0.59 + k * 0.64, y0 - 0.80, f"CLUB{k+1}", ha="center",
+                    va="center", fontsize=5, color="#B71C1C")
+    ax.text(1.6, 0.55, "⋮  7300 – 7500 rpm  ⋮", ha="center", fontsize=7, color="#607D8B")
 
     # Right panel
     box(3.2, 0.2, 8.7, 4.2, "#FAFAFA", "#607D8B")
@@ -247,7 +258,7 @@ def build_pdf(fig_lift, fig_contact, fig_layout):
         ["Software", "AVL Excite Timing Drive"],
         ["Scope",    "Valvetrain functionality verification up to 7 500 rpm"],
         ["Tool",     "valvetrain_viewer.py  (PySide6 + Matplotlib interactive GUI)"],
-        ["Date",     "2026-06-08"],
+        ["Date",     "2026-06-09"],
     ]
     tbl = Table(meta_data, colWidths=[3.5*cm, W - 3.5*cm])
     tbl.setStyle(TableStyle([
@@ -288,18 +299,20 @@ def build_pdf(fig_lift, fig_contact, fig_layout):
     story.append(Image(str(fig_layout), width=W, height=W * 5/12))
     story.append(Paragraph(
         "Figure 1 — Schematic of the application window. "
-        "Left: Results Browser with colour-coded RPM tiles. "
+        "Left: Results Browser structured as Speed (top level) "
+        "→ Valve Lift / Contact Pressure → component tiles. "
         "Right: dual-subplot canvas (Valve Lift top, Contact Pressure bottom).",
         note))
     story.append(Spacer(1, 0.5*cm))
 
     story.append(Paragraph("2.1  Results Browser (left panel)", h3))
     story.append(Paragraph(
-        "The left panel lists all available signal channels for all six RPM operating points "
-        "simultaneously. Tiles are organised hierarchically: <b>signal category</b> → "
-        "<b>RPM sub-header</b> → <b>component tile</b>. "
-        "Each tile is colour-coded by engine speed (see Table 1) to make it easy to identify "
-        "at a glance which operating point is being added to the plot.",
+        "The left panel focuses exclusively on the two key valvetrain KPIs: "
+        "<b>Valve Lift</b> and <b>Contact Pressure</b> (cam–follower Hertzian stress). "
+        "Tiles are organised hierarchically: <b>engine speed</b> (top level) → "
+        "<b>signal category</b> → <b>component tile</b>. "
+        "The speed header bar is colour-coded (see Table 1) so every tile's RPM is "
+        "immediately visible while scrolling.",
         body))
     story.append(Spacer(1, 0.2*cm))
 
@@ -351,17 +364,16 @@ def build_pdf(fig_lift, fig_contact, fig_layout):
     story.append(Spacer(1, 0.5*cm))
 
     # ── 3. Signal categories ──────────────────────────────────────────────────
-    story.append(Paragraph("3.  Available Signal Categories", h2))
+    story.append(Paragraph("3.  Displayed Signal Categories", h2))
+    story.append(Paragraph(
+        "The browser is focused on the two primary valvetrain KPIs. "
+        "Both categories are shown for every RPM operating point (7 000 – 7 500 rpm).",
+        body))
+    story.append(Spacer(1, 0.2*cm))
     cat_table_data = [
         ["Category", "Source file prefix", "Channel", "Unit", "Subplot"],
-        ["Valve Lift",          "VAFA_", "lift",               "mm",  "Top"],
-        ["Valve Seat Force",    "VAFA_", "seat force",         "N",   "Top"],
-        ["Contact Pressure",    "CLUB_", "contact stress",     "MPa", "Bottom"],
-        ["Contact Force",       "CDAT_", "force",              "N",   "Bottom"],
-        ["Spring Force",        "CTOR_", "force",              "N",   "Top"],
-        ["Spring Coil Contact", "SPPR_", "force coil contact", "N",   "Top"],
-        ["Lash Adjuster",       "HLIF_", "lift / force / pressure", "mm / N / Pa", "Top"],
-        ["Finger Follower",     "FIFO_", "lift / force",       "mm / N", "Top"],
+        ["Valve Lift",       "VAFA_", "lift",           "mm",  "Top"],
+        ["Contact Pressure", "CLUB_", "contact stress", "MPa", "Bottom"],
     ]
     ct = Table(cat_table_data, colWidths=[3.8*cm, 2.8*cm, 3.6*cm, 2.0*cm, 1.8*cm])
     ct.setStyle(TableStyle([

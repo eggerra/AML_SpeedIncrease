@@ -273,11 +273,20 @@ class TileWidget(QFrame):
 
 
 # ── Left panel ────────────────────────────────────────────────────────────────
+FOCUS_CATEGORIES = ["Valve Lift", "Contact Pressure"]
+
+# Sub-header colours for category labels inside each RPM group
+CAT_HEADER_COLORS = {
+    "Valve Lift":       ("#1565C0", "#E3F2FD"),   # (text, bg)
+    "Contact Pressure": ("#B71C1C", "#FFEBEE"),
+}
+
+
 class TilePanel(QWidget):
     """
     Shows tiles for ALL six RPM points simultaneously.
-    Organised as: Category header → RPM sub-header → component tiles.
-    A background thread loads all six result directories on startup.
+    Structure: Speed header → Category sub-header → component tiles.
+    Only Valve Lift and Contact Pressure are shown.
     """
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -285,14 +294,12 @@ class TilePanel(QWidget):
         layout.setContentsMargins(4, 4, 4, 4)
         layout.setSpacing(4)
 
-        # Loading indicator (hidden once done)
         self.progress = QProgressBar()
         self.progress.setTextVisible(False)
         self.progress.setFixedHeight(3)
-        self.progress.setRange(0, 0)   # indeterminate
+        self.progress.setRange(0, 0)
         layout.addWidget(self.progress)
 
-        # Scrollable tile area
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -310,35 +317,41 @@ class TilePanel(QWidget):
 
     def _on_catalog(self, catalog):
         self.progress.hide()
+
+        # Build lookup: {rpm: {cat_name: [tiles]}}
+        by_speed = {}
+        for cat_name in FOCUS_CATEGORIES:
+            for t in catalog.get(cat_name, []):
+                by_speed.setdefault(t["rpm"], {}).setdefault(cat_name, []).append(t)
+
         pos = 0
-        for cat_name, tiles in catalog.items():
-            # Category header
-            cat_hdr = QLabel(f"  {cat_name}")
-            cat_hdr.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
-            cat_hdr.setFixedHeight(22)
-            cat_hdr.setStyleSheet(
-                "color:#fff; background:#4a6fa5; padding:2px 4px;"
+        for rpm in sorted(by_speed):
+            bg, border = RPM_TILE_COLORS.get(rpm, ("#f0f4f8", "#c8d0da"))
+
+            # Speed top-level header
+            spd_hdr = QLabel(f"  {rpm} rpm")
+            spd_hdr.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            spd_hdr.setFixedHeight(26)
+            spd_hdr.setStyleSheet(
+                f"color:#fff; background:{border}; padding:2px 6px;"
                 "margin-top:8px; border-radius:3px;"
             )
-            self.inner_layout.insertWidget(pos, cat_hdr); pos += 1
+            self.inner_layout.insertWidget(pos, spd_hdr); pos += 1
 
-            # Group tiles by RPM within this category
-            by_rpm = {}
-            for t in tiles:
-                by_rpm.setdefault(t["rpm"], []).append(t)
-
-            for rpm in sorted(by_rpm):
-                lbl = f"{rpm} rpm"
-                bg, border = RPM_TILE_COLORS.get(rpm, ("#f0f4f8", "#c8d0da"))
-                rpm_hdr = QLabel(f"   ● {lbl}")
-                rpm_hdr.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
-                rpm_hdr.setFixedHeight(18)
-                rpm_hdr.setStyleSheet(
-                    f"color:{border}; background:{bg}; padding-left:6px;"
+            for cat_name in FOCUS_CATEGORIES:
+                tiles = by_speed[rpm].get(cat_name, [])
+                if not tiles:
+                    continue
+                tc, tbg = CAT_HEADER_COLORS.get(cat_name, ("#333", "#eee"))
+                cat_hdr = QLabel(f"   {cat_name}")
+                cat_hdr.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
+                cat_hdr.setFixedHeight(18)
+                cat_hdr.setStyleSheet(
+                    f"color:{tc}; background:{tbg}; padding-left:8px;"
                     "margin-top:2px;"
                 )
-                self.inner_layout.insertWidget(pos, rpm_hdr); pos += 1
-                for t in by_rpm[rpm]:
+                self.inner_layout.insertWidget(pos, cat_hdr); pos += 1
+                for t in tiles:
                     self.inner_layout.insertWidget(pos, TileWidget(t)); pos += 1
 
 
