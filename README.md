@@ -5,6 +5,55 @@ parametric CAD (pythonOCC / FreeCAD), Gmsh meshing, and CalculiX FEA.
 
 ---
 
+## Valvetrain Result Viewer (`valvetrain_viewer.py`)
+
+Interactive GUI for AVL Excite Timing Drive results (model `vtRBint01.Ref_C10`,
+6 RPM points 7000–7500 rpm).
+
+### Running
+
+```bash
+python valvetrain_viewer.py
+```
+
+Requires: PySide6, matplotlib, numpy, scipy.
+
+### Usage
+
+Drag any tile from the left panel onto the plot canvas to add a curve.
+Valve Lift channels appear in the top subplot; Contact Pressure (cam stress)
+channels appear in the bottom subplot.
+
+| Interaction | Action |
+|---|---|
+| Left-drag on plot | Pan |
+| Scroll wheel | Zoom centred on cursor |
+| Right double-click | Reset to initial view |
+| Toolbar | Home / back / forward, additional pan/zoom modes |
+
+### LP filter
+
+The slider in the toolbar applies a 4th-order zero-phase Butterworth low-pass
+filter to all Contact Pressure curves in real time.
+Range: **3–8 kHz** (8 kHz = OFF). The cutoff is converted to physical frequency
+using each curve's RPM and crank-angle sample spacing.
+
+### Contact-loss detection
+
+For every Contact Pressure curve the main cam event is identified automatically
+(region where raw stress > 5 % of peak). The minimum filtered stress in that
+window is evaluated and a severity label is drawn on the bottom subplot:
+
+| Label | Condition | Meaning |
+|---|---|---|
+| ✓ green | min ≥ 0 MPa | No contact loss |
+| ⚠ amber | 0 > min > −5 % of peak | Mild / brief contact loss |
+| ✗ red | min ≤ −5 % of peak | Severe contact loss |
+
+Labels update live when the LP filter slider is moved.
+
+---
+
 ## Drawing specification
 
 | Symbol | Parameter | Value | Unit |
