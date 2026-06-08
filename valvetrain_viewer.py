@@ -1,6 +1,29 @@
 """
 Valvetrain Result Viewer — AVL Excite Timing Drive
+===================================================
 Drag result tiles from the left panel onto the plot canvas.
+
+Features
+--------
+- Left-drag to pan, scroll-wheel to zoom (pan mode active by default).
+- Right double-click anywhere on the plot to restore the initial view.
+- LP filter slider (3–8 kHz, 8 kHz = OFF): applies a 4th-order Butterworth
+  low-pass filter to all Contact Pressure (cam stress) curves in real time.
+  Cutoff is converted to physical Hz using each curve's RPM and crank-angle
+  sample spacing.
+- Contact-loss detection: for every Contact Pressure curve the main cam event
+  (region where raw stress > 5 % of peak) is scanned.  The minimum filtered
+  stress in that window determines a severity label drawn on the plot:
+    ✓ green  — no contact loss (min ≥ 0 MPa)
+    ⚠ amber  — mild contact loss (0 > min > −5 % of peak)
+    ✗ red    — severe contact loss (min ≤ −5 % of peak)
+  Labels update live when the LP filter slider is moved.
+
+Data source
+-----------
+  BASE  = D:\\AW82001\\5005\\...\\excite_td
+  MODEL = vtRBint01.Ref_C10
+  RPM points: 7000–7500 rpm (100 rpm steps)
 """
 import sys, os, re, json, itertools
 import numpy as np
@@ -9,9 +32,11 @@ from PySide6.QtCore import Qt, QMimeData, QByteArray, QThread, Signal
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QScrollArea, QLabel, QFrame, QComboBox, QPushButton, QSplitter,
-    QSizePolicy, QProgressBar,
+    QSizePolicy, QProgressBar, QSlider,
 )
 from PySide6.QtGui import QDrag, QFont, QCursor, QColor, QPalette
+
+from scipy.signal import butter, filtfilt
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
@@ -371,11 +396,17 @@ class PlotCanvas(FigureCanvas):
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self._curves = []           # (line_obj, ax)
+        # Each entry: {line, ax, x, y_raw, rpm, axis, short_name, contact_ann}
+        self._curves = []
         self._color_top = itertools.cycle(COLORS)
         self._color_bot = itertools.cycle(COLORS[5:] + COLORS[:5])
+        self._lp_cutoff_hz = None   # None = no filter
+
+        # Contact-loss severity: |min_stress| < this fraction of peak → amber, else red
+        self._CL_WARN_FRAC = 0.05
 
         self._init_axes()
+        self.mpl_connect('scroll_event', self._on_scroll)
 
     def _init_axes(self):
         for ax in (self.ax_top, self.ax_bot):
@@ -396,6 +427,34 @@ class PlotCanvas(FigureCanvas):
 
         self.fig.tight_layout(pad=1.8, h_pad=1.2)
 
+    # ── scroll-wheel zoom ─────────────────────────────────────────────────────
+    def _on_scroll(self, event):
+        if event.inaxes is None:
+            return
+        ax = event.inaxes
+        scale = 0.82 if event.button == 'up' else 1.0 / 0.82
+        xd, yd = event.xdata, event.ydata
+        xl, xr = ax.get_xlim()
+        yb, yt = ax.get_ylim()
+        ax.set_xlim(xd + (xl - xd) * scale, xd + (xr - xd) * scale)
+        ax.set_ylim(yd + (yb - yd) * scale, yd + (yt - yd) * scale)
+        self.draw_idle()
+
+    # ── right double-click → reset view ──────────────────────────────────────
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            self._reset_view()
+        else:
+            super().mouseDoubleClickEvent(event)
+
+    def _reset_view(self):
+        for ax in (self.ax_top, self.ax_bot):
+            ax.relim()
+            ax.autoscale_view()
+        self.ax_top.set_xlim(0, 720)
+        self.ax_bot.set_xlim(0, 720)
+        self.draw_idle()
+
     # ── drag-and-drop ─────────────────────────────────────────────────────────
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-tile"):
@@ -410,6 +469,90 @@ class PlotCanvas(FigureCanvas):
         tile = json.loads(raw)
         self._add_curve(tile)
         event.acceptProposedAction()
+
+    # ── LP filter ─────────────────────────────────────────────────────────────
+    def set_lp_cutoff(self, hz):
+        """hz=None means pass-through (no filter)."""
+        self._lp_cutoff_hz = hz
+        self._reapply_filter()
+
+    def _lpf(self, x, y, rpm):
+        if self._lp_cutoff_hz is None:
+            return y
+        omega = rpm / 60.0 * 360.0          # crank deg/s
+        dx    = float(np.mean(np.diff(x)))
+        if dx <= 0:
+            return y
+        fs   = omega / dx                    # physical sample rate [Hz]
+        nyq  = fs / 2.0
+        if self._lp_cutoff_hz >= nyq:
+            return y
+        b, a = butter(4, self._lp_cutoff_hz / nyq, btype='low')
+        return filtfilt(b, a, y)
+
+    def _reapply_filter(self):
+        for c in self._curves:
+            if c['axis'] == 'bot':
+                c['line'].set_ydata(self._lpf(c['x'], c['y_raw'], c['rpm']))
+        for ax in (self.ax_top, self.ax_bot):
+            ax.relim()
+            ax.autoscale_view()
+        self._update_contact_loss_labels()
+        self.draw_idle()
+
+    # ── contact-loss detection ────────────────────────────────────────────────
+    def _detect_contact_loss(self, c):
+        """Returns ('ok'|'warn'|'crit', min_stress_MPa) using current filtered data."""
+        y_filt = c['line'].get_ydata()
+        y_raw  = c['y_raw']
+        if len(y_filt) == 0:
+            return 'ok', 0.0
+        peak = float(np.max(y_raw))
+        if peak < 1.0:
+            return 'ok', 0.0
+        # Main event: where unfiltered signal exceeds 5 % of peak
+        main_mask = y_raw > 0.05 * peak
+        if not np.any(main_mask):
+            return 'ok', 0.0
+        min_in_event = float(np.min(y_filt[main_mask]))
+        if min_in_event >= 0.0:
+            return 'ok', min_in_event
+        if abs(min_in_event) < self._CL_WARN_FRAC * peak:
+            return 'warn', min_in_event
+        return 'crit', min_in_event
+
+    def _update_contact_loss_labels(self):
+        # Remove stale annotations from previous call
+        for c in self._curves:
+            ann = c.pop('contact_ann', None)
+            if ann is not None:
+                try:
+                    ann.remove()
+                except Exception:
+                    pass
+
+        bot_curves = [c for c in self._curves if c['axis'] == 'bot']
+        y_pos = 0.97
+        for c in bot_curves:
+            status, min_val = self._detect_contact_loss(c)
+            rpm = c['rpm']
+            if status == 'ok':
+                txt   = f"✓  {rpm} rpm — no contact loss"
+                color = "#2e7d32"
+            elif status == 'warn':
+                txt   = f"⚠  {rpm} rpm — contact loss  min {min_val:.0f} MPa"
+                color = "#e65100"
+            else:
+                txt   = f"✗  {rpm} rpm — contact loss  min {min_val:.0f} MPa"
+                color = "#b71c1c"
+            ann = self.ax_bot.annotate(
+                txt, xy=(0.01, y_pos), xycoords='axes fraction',
+                fontsize=7, color=color, fontweight='bold',
+                bbox=dict(boxstyle='round,pad=0.25', facecolor='white',
+                          edgecolor=color, linewidth=1.2, alpha=0.9),
+            )
+            c['contact_ann'] = ann
+            y_pos -= 0.09
 
     # ── data loading ──────────────────────────────────────────────────────────
     def _add_curve(self, tile):
@@ -444,13 +587,18 @@ class PlotCanvas(FigureCanvas):
         elif unit in ("N/m^2", "Pa"):
             y = y / 1e6;     unit = "MPa"
 
-        label = f"{tile['short_name']} · {tile['channel']} [{unit}]"
         axis  = tile.get("plot_axis", "top")
         ax    = self.ax_bot if axis == "bot" else self.ax_top
         color = next(self._color_bot if axis == "bot" else self._color_top)
+        rpm   = tile.get("rpm", 7000)
+        label = f"{tile['short_name']} · {tile['channel']} [{unit}]"
 
-        (line,) = ax.plot(x, y, label=label, color=color, linewidth=1.3)
-        self._curves.append((line, ax))
+        y_plot = self._lpf(x, y, rpm) if axis == 'bot' else y
+        (line,) = ax.plot(x, y_plot, label=label, color=color, linewidth=1.3)
+        self._curves.append({'line': line, 'ax': ax, 'x': x, 'y_raw': y,
+                              'rpm': rpm, 'axis': axis,
+                              'short_name': tile.get('short_name', ''),
+                              'contact_ann': None})
         self._refresh()
 
     def _refresh(self):
@@ -459,6 +607,7 @@ class PlotCanvas(FigureCanvas):
             if lines:
                 ax.legend(loc="upper right", fontsize=7,
                           framealpha=0.85, edgecolor="#aaa")
+        self._update_contact_loss_labels()
         self.fig.tight_layout(pad=1.8, h_pad=1.2)
         self.draw()
 
@@ -475,8 +624,14 @@ class PlotCanvas(FigureCanvas):
     def remove_last(self):
         if not self._curves:
             return
-        line, ax = self._curves.pop()
-        line.remove()
+        c = self._curves.pop()
+        c['line'].remove()
+        ann = c.get('contact_ann')
+        if ann is not None:
+            try:
+                ann.remove()
+            except Exception:
+                pass
         self._refresh()
 
 
@@ -537,6 +692,29 @@ class MainWindow(QMainWindow):
             )
             btn.clicked.connect(getattr(self, f"_{slot_name}"))
             btn_row.addWidget(btn)
+        # LP filter slider  (cam stresses in bottom subplot)
+        btn_row.addSpacing(16)
+        lp_lbl = QLabel("LP filter:")
+        lp_lbl.setFont(QFont("Segoe UI", 8))
+        lp_lbl.setStyleSheet("color:#555;")
+        btn_row.addWidget(lp_lbl)
+
+        self._lp_slider = QSlider(Qt.Orientation.Horizontal)
+        self._lp_slider.setRange(3000, 8000)
+        self._lp_slider.setValue(8000)
+        self._lp_slider.setFixedWidth(160)
+        self._lp_slider.setTickInterval(500)
+        self._lp_slider.setToolTip("Low-pass filter cutoff for cam stresses (3–8 kHz). Max = OFF.")
+        btn_row.addWidget(self._lp_slider)
+
+        self._lp_val = QLabel("OFF")
+        self._lp_val.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
+        self._lp_val.setFixedWidth(60)
+        self._lp_val.setStyleSheet("color:#1565C0;")
+        btn_row.addWidget(self._lp_val)
+
+        self._lp_slider.valueChanged.connect(self._on_lp_changed)
+
         btn_row.addStretch()
 
         drop_hint = QLabel("← drop tiles here")
@@ -547,6 +725,7 @@ class MainWindow(QMainWindow):
 
         self.canvas = PlotCanvas()
         self.nav = NavigationToolbar(self.canvas, right)
+        self.nav.pan()   # pan mode on by default (left-drag pans, right-drag zooms)
         rv.addWidget(self.nav)
         rv.addWidget(self.canvas)
 
@@ -559,6 +738,14 @@ class MainWindow(QMainWindow):
 
     def _remove_last(self):
         self.canvas.remove_last()
+
+    def _on_lp_changed(self, val):
+        if val >= 8000:
+            self._lp_val.setText("OFF")
+            self.canvas.set_lp_cutoff(None)
+        else:
+            self._lp_val.setText(f"{val} Hz")
+            self.canvas.set_lp_cutoff(float(val))
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
