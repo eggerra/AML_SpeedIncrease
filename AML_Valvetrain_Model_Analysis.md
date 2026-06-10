@@ -312,7 +312,104 @@ The strong nonlinearity at low pressures (dissolved air degas effect) is critica
 
 ---
 
-## 6. File Structure Summary
+## 6. Dynamic Simulation Results — `vtRBint01.Ref_C10.Pup_*` (7000–7500 rpm)
+
+All results extracted from GID files in the `results/` subdirectory of each RPM run folder.
+Result channels read: CDAT (cam/follower contact), HLIF (hydraulic lash adjuster), SPPR (spring coil).
+Valve numbering V1–V8 corresponds to element numbers CDAT_6, _14, _29, _38, _47, _56, _65, _74.
+
+### 6.1 Cam/Follower Contact Force — `CDAT` (Valve 1, representative)
+
+| Speed | Lift max | Contact force max | Contact force min | Note |
+|---|---|---|---|---|
+| 7000 rpm | 4.961 mm | 2 336 N | 0.0 N | Contact loss |
+| 7100 rpm | 4.961 mm | 2 378 N | 0.0 N | Contact loss |
+| 7200 rpm | 4.962 mm | 2 484 N | 0.0 N | Contact loss |
+| 7300 rpm | 4.962 mm | 2 584 N | 46.2 N | Marginal |
+| 7400 rpm | 4.962 mm | 2 784 N | 0.0 N | Contact loss |
+| 7500 rpm | 4.962 mm | 2 861 N | 36.8 N | Marginal |
+
+The cam/follower contact force increases by ~22% from 7000 to 7500 rpm due to increasing inertia loads.
+Valve lift remains nearly constant (4.96 mm) — the CDAT reports the follower position, not the full 10 mm cam lift, confirming the element captures the dynamic response of the valvetrain chain.
+
+### 6.2 Contact Loss Map — All 8 Valves
+
+Contact loss (follower bounce, contact force = 0) is detected when the minimum cam/follower contact force drops to zero during any part of the valve event.
+
+| Speed | Valves with contact loss | Count |
+|---|---|---|
+| 7000 rpm | V1, V3, V4, V5, V6, V7, V8 | 7 / 8 |
+| 7100 rpm | V1, V2, V3, V4, V5, V6, V7, V8 | **8 / 8** |
+| 7200 rpm | V1, V2, V3, V4, V5, V7, V8 | 7 / 8 |
+| 7300 rpm | V2, V3, V4, V5, V6, V7 | 6 / 8 |
+| 7400 rpm | V1, V2, V3, V4, V7 | 5 / 8 |
+| 7500 rpm | V2, V3, V6, V7, V8 | 5 / 8 |
+
+> **Critical finding:** Follower contact loss occurs on the majority of valves across the entire 7000–7500 rpm range. The worst case is 7100 rpm (all 8 valves). The contact loss is non-monotonic with speed — it does not simply worsen as speed increases — suggesting resonance excitation of specific natural frequencies rather than pure inertia-dominated behavior. V7 (CDAT_65) shows contact loss at all six speed points.
+
+### 6.3 Hydraulic Lash Adjuster — `HLIF` Results
+
+#### Working Pressure
+
+| Speed | Max working pressure (any HLA) | Mean of 8 HLA peaks |
+|---|---|---|
+| 7000 rpm | 227 bar | 216 bar |
+| 7100 rpm | 233 bar | 218 bar |
+| 7200 rpm | 246 bar | 225 bar |
+| 7300 rpm | 266 bar | 245 bar |
+| 7400 rpm | 285 bar | 266 bar |
+| 7500 rpm | 291 bar | 273 bar |
+
+The peak working pressure exceeds **290 bar** at 7500 rpm. From the oil bulk modulus table, at these pressures (>25 MPa) the bulk modulus is ~1 100–1 200 N/mm², making the HLA essentially rigid. The continuous pressure rise with speed reflects the increasing inertia load that the HLA must resist during the cam lift event.
+
+#### HLA Pump-Up (Base Circle Lift)
+
+Pump-up is measured as the mean HLA lift during the base circle phase (crank angle 270°–450° excluded), where the valve should be fully closed. A non-zero value indicates oil has been pumped into the high-pressure chamber, effectively extending the HLA and increasing valve preload.
+
+| Speed | Mean base-circle lift (all 8) | Max base-circle lift (worst HLA) |
+|---|---|---|
+| 7000 rpm | 0.032 mm | 0.042 mm |
+| 7100 rpm | 0.033 mm | 0.043 mm |
+| 7200 rpm | 0.050 mm | **0.106 mm** |
+| 7300 rpm | 0.080 mm | **0.187 mm** |
+| 7400 rpm | 0.063 mm | 0.136 mm |
+| 7500 rpm | 0.048 mm | 0.146 mm |
+
+> **Observation:** Pump-up is mild at 7000–7100 rpm (~30–40 µm) but jumps significantly at 7200–7300 rpm, with the worst individual HLA reaching **187 µm** at 7300 rpm. This is a dynamic pump-up event caused by contact loss — when the follower bounces off the cam, the HLA briefly extends before the cam regains contact, ratcheting up the oil volume. The reduction in worst-case pump-up above 7300 rpm is consistent with the contact loss map showing fewer affected valves at higher speeds.
+
+The ball check valve remains **closed** (lift = 0 µm) throughout the entire speed range, meaning no fresh oil enters the HLA during the lift event. All pump-up is driven by elastic deformation and trapped oil compression/expansion cycles.
+
+Supply pressure holds steady at **3.60 bar** (the gallery pressure variable), confirming the oil feed is sufficient and the HLA is not starved.
+
+### 6.4 Spring Coil Contact Force — `SPPR` (End Coil, Valve Side)
+
+| Speed | Max end-coil contact force | Location |
+|---|---|---|
+| 7000 rpm | 632 N | INTr_SPG1\end_coil_valve_10_element_2 |
+| 7100 rpm | 625 N | INTr_SPG1\end_coil_valve_10_element_2 |
+| 7200 rpm | 625 N | INTr_SPG1\end_coil_valve_10_element_2 |
+| 7300 rpm | 633 N | INTr_SPG1\end_coil_valve_10_element_2 |
+| 7400 rpm | 633 N | INTr_SPG1\end_coil_valve_10_element_2 |
+| 7500 rpm | 613 N | INTr_SPG1\end_coil_valve_10_element_2 |
+
+The end-coil contact force (~613–633 N) is nearly constant across the speed range and closely matches the full-lift static spring force (625 N from the force table at 26.2 mm). The coil contact occurs at maximum valve lift, where the end coils close against the adjacent active coils — this is the progressive rate mechanism. The insensitivity to speed confirms that coil contact is statically dominated (spring compression drives it, not inertia), and the spring is correctly modeled with coil contact active at full lift.
+
+The `element_2` sub-element is consistently the highest-loaded position within the end-coil group, as expected for the first contact point on the valve-side end coil.
+
+### 6.5 Summary of Key Findings from Dynamic Results
+
+| Finding | Value | Significance |
+|---|---|---|
+| Max cam/follower contact force | 2 861 N @ 7500 rpm | Design load for cam/follower durability |
+| Contact loss (follower bounce) | 5–8 / 8 valves, all RPMs | **Critical** — present across entire speed range |
+| Worst pump-up | 187 µm @ 7300 rpm | HLA losing lock; increases effective preload |
+| Max HLA working pressure | 291 bar @ 7500 rpm | Oil effectively rigid; normal operating range |
+| Max spring coil contact force | 633 N @ 7000/7300 rpm | Static compression dominated; ~1× spring preload at lift |
+| Ball check valve | Always closed | Normal; no refill during lift event |
+
+---
+
+## 7. File Structure Summary  *(unchanged)*
 
 ```
 excite_td/
@@ -334,7 +431,7 @@ excite_td/
 
 ---
 
-## 7. References
+## 8. References
 
 | Document | Description |
 |---|---|
