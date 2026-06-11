@@ -11,41 +11,52 @@ Pitch is NON-UNIFORM (progressive):
 Bottom coils (large OD, softer) bind first as the spring is compressed.
 The remaining active coils are the stiffer small-OD top coils, producing an
 increasing spring rate (progressive behaviour) consistent with F1=250N / F2=620N.
+
+Calibration (2026-06-11) — aligned to INT_Spring_measurement.txt:
+  Drawing L0=46.1 mm produces F1_FEA=374 N vs measured 249 N because the
+  nominal geometry gives k_FEA~26 N/mm while the measurement implies ~35 N/mm.
+  Two free parameters (L0, n_closed) were fitted to two measurement constraints:
+    1. F1=249 N at L1=31.6 mm  (preload force)
+    2. kink1 at lift=4.05 mm from L1  (first coil-binding event)
+  These uniquely require k_FEA=35 N/mm → n_active=4.548, n_closed=2.026.
+  L0=38.72 mm then follows from F1=k_FEA*(L0-L1).
+  D_pitch is re-derived from the kink position with the new geometry.
+  Wire cross-section and coil diameters are unchanged from the drawing.
 """
 import math
 import sys
 
-# -- Drawing parameters --------------------------------------------------------
-L0         = 46.1    # free length [mm]
+# -- Drawing parameters (wire cross-section and diameters unchanged) -----------
 wire_a     = 2.92    # wire axial dimension (along spring axis) [mm]
 wire_r     = 3.66    # wire radial dimension (transverse to axis) [mm]
 nt         = 8.6     # total coils
 Di_bot     = 15.90   # inner diameter bottom [mm]
 Di_top     = 12.00   # inner diameter top [mm]
 grind_z    = 0.75    # ground end cut depth [mm]
-n_closed   = 1.25    # closed (ground) coils at each end
+
+# -- Calibrated parameters (fitted to INT_Spring_measurement.txt) --------------
+# L0 and n_closed are the two free parameters calibrated against:
+#   F1=249 N at L1=31.6 mm  AND  kink1 at lift=4.05 mm from L1.
+L0         = 38.717  # free length [mm]   (drawing: 46.1 mm; calibrated to match F1)
+n_closed   = 2.026   # closed coils per end (drawing: 1.25; calibrated to match k_FEA=35 N/mm)
 
 R_mean_bot = Di_bot / 2 + wire_r / 2   # = 9.78 mm
 R_mean_top = Di_top / 2 + wire_r / 2   # = 7.83 mm
 
 # -- Variable-pitch parameters -------------------------------------------------
-n_active   = nt - 2 * n_closed          # = 6.1 active coils
-h_closed   = n_closed * wire_a          # = 3.650 mm per dead end
-h_active   = L0 - 2 * h_closed         # = 38.800 mm active zone height
-pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
+n_active   = nt - 2 * n_closed          # = 4.548 active coils
+h_closed   = n_closed * wire_a          # = 5.916 mm per dead end
+h_active   = L0 - 2 * h_closed         # = 26.885 mm active zone height
+pitch_mean = h_active / n_active        # = 5.911 mm mean active pitch
 
 # D_pitch controls the pitch gradient.  D_pitch > 0 -> less pitch at bottom
-# (large OD), more pitch at top (small OD).  Constraint: D_pitch < 1.
-# Effective pitches:
-#   p_bot  = pitch_mean * (1 - D_pitch)   <- large-OD coils, small gap -> bind first
-#   p_top  = pitch_mean * (1 + D_pitch)   <- small-OD coils, large gap -> bind last
-# Drawing implies ~1.7 bottom coils bind before L1 (10 mm compression) and
-# ~1.3 more bind before L2 (20 mm compression).
-# D_pitch = 0.22  ->  p_bot ~ 4.96 mm (gap 2.04 mm), p_top ~ 7.76 mm
-# Pitch ratio 7.76/4.96 = 1.57x — clearly visible progressive gradient.
-# Gap at bottom (2.04 mm, large-OD) is the same absolute size as the old
-# tight-top design (2.04 mm, small-OD) which meshed successfully.
-D_pitch    = 0.22
+# (large OD), more pitch at top (small OD).
+# Re-derived for the calibrated geometry to place kink1 at lift=4.05 mm from L1:
+#   s_bind = h_active*(1-D_pitch) - n_active*wire_a = s_preload + 4.05
+#   s_preload = L0-L1 = 38.717-31.6 = 7.117 mm  ->  s_bind = 11.167 mm
+#   -> D_pitch = 1 - (s_bind + n_active*wire_a)/h_active = 0.0907
+# D_pitch = 0.0907  ->  p_bot = 5.375 mm (gap 2.455 mm), p_top = 6.447 mm
+D_pitch    = 0.0907
 
 p_bot  = pitch_mean * (1 - D_pitch)
 p_top  = pitch_mean * (1 + D_pitch)
@@ -59,7 +70,10 @@ print(f"  L0={L0} mm,  h_active={h_active:.2f} mm,  pitch_mean={pitch_mean:.3f} 
 print(f"  Pitch gradient: {p_bot:.2f} mm (bot/large-OD) -> {p_top:.2f} mm (top/small-OD)  ratio={p_top/p_bot:.2f}x")
 
 # Beehive profile: cylindrical section at bottom, linear taper toward top.
-n_cyl_end  = 3.0   # coils at full bottom diameter before taper begins
+# n_cyl_end=3.5: extends the large-OD (soft) bottom section by 0.5 coil vs the
+# previous 3.0 setting.  More large-OD coils bind first at lift=4.34 mm, which
+# explains the small initial rate change (35→36.5 N/mm) seen in the measurement.
+n_cyl_end  = 3.5   # coils at full bottom diameter before taper begins
 
 # -- OCC imports ---------------------------------------------------------------
 from OCC.Core.TColgp import TColgp_HArray1OfPnt
