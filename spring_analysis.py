@@ -20,11 +20,13 @@ import matplotlib.pyplot as plt
 
 # -- Paths ---------------------------------------------------------------------
 BASE      = r"D:\Projects_AI\AML_SpeedIncrease"
-MESH_INP  = os.path.join(BASE, "ValveSpring_mesh.inp")
-FULL_INP  = os.path.join(BASE, "ValveSpring_contact.inp")
-JOB       = "ValveSpring_contact"
+MESH_INP  = os.environ.get("SPRING_MESH_INP",
+                            os.path.join(BASE, "ValveSpring_mesh.inp"))
+JOB       = os.environ.get("SPRING_JOB", "ValveSpring_contact")
+FULL_INP  = os.path.join(BASE, JOB + ".inp")
 DAT_FILE  = os.path.join(BASE, JOB + ".dat")
-PLOT_FILE = os.path.join(BASE, "spring_FvL.png")
+PLOT_FILE = os.environ.get("SPRING_PLOT",
+                            os.path.join(BASE, "spring_FvL.png"))
 
 # CalculiX executable bundled with FreeCAD 1.1
 CCX_CANDIDATES = [
@@ -36,19 +38,19 @@ CCX_CANDIDATES = [
 # -- Spring geometry (calibrated to INT_Spring_measurement.txt) ----------------
 # L0 and N_CLOSED calibrated so FEA reproduces F1=249 N at L1=31.6 mm and
 # kink1 at lift=4.05 mm.  Wire cross-section and diameters are unchanged.
-L0      = 38.717  # free length [mm]   (drawing: 46.1; calibrated)
+L0      = float(os.environ.get("SPRING_L0", "38.717"))  # free length [mm]
 grind_z = 0.75
 Z_BOT   = grind_z           # 0.75 mm
-Z_TOP   = L0 - grind_z     # 37.967 mm
+Z_TOP   = L0 - grind_z
 Z_TOL   = 0.40              # node selection tolerance [mm]
 
 # Contact surface: active coil zone only (exclude closed/ground end coils)
 N_CLOSED  = 2.026            # closed coils per end  (drawing: 1.25; calibrated)
-WIRE_A    = 2.92
+WIRE_A    = float(os.environ.get("SPRING_WIRE_A", "2.92"))
 N_TOTAL   = 8.6
 N_ACTIVE  = N_TOTAL - 2 * N_CLOSED   # 4.548 active coils
-H_CLOSED  = N_CLOSED * WIRE_A        # 5.916 mm per dead end
-H_ACTIVE  = L0 - 2 * H_CLOSED       # 26.885 mm active zone height
+H_CLOSED  = N_CLOSED * WIRE_A
+H_ACTIVE  = L0 - 2 * H_CLOSED
 D_PITCH   = 0.0907                   # pitch gradient (must match generate_spring.py)
 pitch_mean = H_ACTIVE / N_ACTIVE     # mean active pitch [mm]
 Z_CONTACT_BOT = H_CLOSED + 0.5              # 6.416 mm — small buffer above ground end

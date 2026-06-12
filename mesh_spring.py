@@ -8,9 +8,9 @@ Run with:
 import sys, os
 
 BASE  = r"D:\Projects_AI\AML_SpeedIncrease"
-STEP  = os.path.join(BASE, "ValveSpring.step")
-OUT   = os.path.join(BASE, "ValveSpring_mesh.inp")
-FCSTD = os.path.join(BASE, "ValveSpring_meshed.FCStd")
+STEP  = os.environ.get("SPRING_STEP",     os.path.join(BASE, "ValveSpring.step"))
+OUT   = os.environ.get("SPRING_MESH_OUT", os.path.join(BASE, "ValveSpring_mesh.inp"))
+FCSTD = os.environ.get("SPRING_FCSTD",   os.path.join(BASE, "ValveSpring_meshed.FCStd"))
 
 LMAX = 1.5
 LMIN = 0.5
@@ -47,6 +47,7 @@ mesh_obj.CharacteristicLengthMax = f"{LMAX} mm"
 mesh_obj.CharacteristicLengthMin = f"{LMIN} mm"
 mesh_obj.ElementOrder            = "2nd"
 mesh_obj.OptimizeStd             = True
+mesh_obj.HighOrderOptimize       = "Elastic+Optimization"  # fix neg-Jacobian 2nd-order nodes
 mesh_obj.WorkingDirectory        = BASE
 doc.recompute()
 

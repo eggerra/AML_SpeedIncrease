@@ -25,6 +25,7 @@ Calibration (2026-06-11) — aligned to INT_Spring_measurement.txt:
 """
 import math
 import sys
+import numpy as _np
 
 # -- Drawing parameters (wire cross-section and diameters unchanged) -----------
 wire_a     = 2.92    # wire axial dimension (along spring axis) [mm]
@@ -88,6 +89,41 @@ from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.Interface import Interface_Static
 from OCC.Core.StlAPI import StlAPI_Writer
 from OCC.Core.BRepMesh import BRepMesh_IncrementalMesh
+
+# -- Wire cross-section profile selection -------------------------------------
+# "ellipse" : pure ellipse with semi-axes wire_r/2 x wire_a/2  (default)
+# "oval"    : oval per thesis DFE6113_5004_00 formula (40), c=OVAL_C,
+#             area-matched to the ellipse cross-section
+# In FreeCAD: argv[0]=FreeCADCmd, argv[1]=script path, argv[2]=first user arg
+_os = __import__("os")
+WIRE_PROFILE = _os.environ.get(
+    "SPRING_PROFILE",
+    sys.argv[2] if len(sys.argv) > 2 else "ellipse",
+)
+# numpy version compatibility: trapezoid (>=2.0) vs trapz (<2.0)
+_trapz = getattr(_np, "trapezoid", None) or getattr(_np, "trapz")
+OVAL_C = 0.2      # oval parameter from formula (40): 0 < c <= 0.3
+# b_oval that makes oval_area(a=1.83, b, c=0.2) = pi*1.83*1.46 = 8.394 mm²
+# pre-solved numerically (see compare_wire_profiles.py for derivation):
+OVAL_B = 1.43585  # area-matched axial semi-parameter for oval [mm]
+
+# The oval wire is slightly taller in the axial direction than the ellipse.
+# If closed-end coil pitch = wire_a (ellipse height = 2.92mm) is used, the oval
+# surface self-intersects, causing Gmsh 3D meshing to fail.
+# Compute the true oval axial max extent and use it for the closed-end pitch.
+if WIRE_PROFILE == "oval":
+    _t_ov = _np.linspace(0, 2 * _np.pi, 2000)
+    _y_ov = OVAL_B * _np.cos(_t_ov) * _np.exp(OVAL_C * (wire_r / 2) * _np.sin(_t_ov))
+    _wire_a_eff = 2.0 * float(_np.max(_np.abs(_y_ov))) + 0.15  # +0.15mm mesh clearance
+    # Preserve calibrated h_active (active zone height → spring rate unchanged)
+    wire_a   = _wire_a_eff        # update closed-coil pitch
+    h_closed = n_closed * wire_a  # override: closed-end height
+    L0       = h_active + 2 * h_closed  # adjusted free length for oval wire
+    print(f"  Oval wire axial eff: {_wire_a_eff:.3f} mm  (ellipse: 2.92 mm)  "
+          f"-> L0_oval={L0:.3f} mm")
+
+print(f"  Wire profile : {WIRE_PROFILE}" +
+      (f"  (c={OVAL_C}, b_oval={OVAL_B} mm)" if WIRE_PROFILE == "oval" else ""))
 
 
 def helix_radius(coil_num):
@@ -172,12 +208,78 @@ profile_ax2 = gp_Ax2(
     gp_Dir(tx, ty, tz),
     gp_Dir(rx, ry, rz),
 )
-ellipse_geom = GC_MakeEllipse(profile_ax2, wire_r / 2, wire_a / 2).Value()
-profile_edge = BRepBuilderAPI_MakeEdge(ellipse_geom).Edge()
-profile_wire_bld = BRepBuilderAPI_MakeWire()
-profile_wire_bld.Add(profile_edge)
-profile_wire = profile_wire_bld.Wire()
-print("  Profile ellipse built.")
+
+if WIRE_PROFILE == "oval":
+    # Oval cross-section per formula (40) of DFE6113_5004_00-MasterThesis-VATA:
+    #   x(t) = a * sin(t)                    [radial direction, along r-vector]
+    #   y(t) = b * cos(t) * exp(c * x(t))    [axial direction, along b-vector]
+    # t in [0, 2pi]. c=0 reduces to ellipse. c=OVAL_C=0.2 here.
+    # b = OVAL_B is chosen so the enclosed area equals the ellipse (pi*a*b_ell).
+    # Profile is built as 4 separate non-periodic B-spline arcs (one per quadrant)
+    # joined into a closed wire.  A single periodic B-spline creates a seam edge
+    # in the swept BRep solid that Gmsh cannot volume-mesh.
+    N_ARC = 6   # sample points per quadrant arc (includes shared endpoints)
+    a_p   = wire_r / 2    # 1.83 mm — radial semi-axis (same as ellipse)
+    b_p   = OVAL_B        # 1.43585 mm — area-matched axial parameter
+
+    # Centroid via Green's theorem (high-resolution numerical integral)
+    t_full = _np.linspace(0, 2 * _np.pi, 400, endpoint=False)
+    u_full = a_p * _np.sin(t_full)
+    v_full = b_p * _np.cos(t_full) * _np.exp(OVAL_C * u_full)
+    dxdt_f = a_p * _np.cos(t_full)
+    dydt_f = b_p * _np.exp(OVAL_C * u_full) * (-_np.sin(t_full) + OVAL_C * a_p * _np.cos(t_full)**2)
+    A_s    = 0.5 * _trapz(u_full * dydt_f - v_full * dxdt_f, t_full)
+    u_c    = (0.5 / A_s) * _trapz(u_full**2 * dydt_f, t_full)
+    v_c    = -(0.5 / A_s) * _trapz(v_full**2 * dxdt_f, t_full)
+
+    print(f"  Oval: a={a_p:.3f} b={b_p:.5f} c={OVAL_C}  "
+          f"area={abs(A_s):.4f} mm2  centroid offset u_c={u_c:.4f} mm")
+
+    def _oval_pt(t):
+        u_raw = a_p * float(_np.sin(t))
+        v_raw = b_p * float(_np.cos(t)) * float(_np.exp(OVAL_C * u_raw))
+        u = u_raw - u_c
+        v = v_raw - v_c
+        return gp_Pnt(cx + u * rx + v * bx,
+                      cy + u * ry + v * by,
+                      cz + u * rz + v * bz)
+
+    def _oval_tang(t):
+        # d/dt of (a*sin(t), b*cos(t)*exp(c*a*sin(t))), centroid shift is constant
+        du = a_p * float(_np.cos(t))
+        u_raw = a_p * float(_np.sin(t))
+        dv = b_p * float(_np.exp(OVAL_C * u_raw)) * (
+             -float(_np.sin(t)) + OVAL_C * a_p * float(_np.cos(t))**2)
+        return gp_Vec(du * rx + dv * bx,
+                      du * ry + dv * by,
+                      du * rz + dv * bz)
+
+    profile_wire_bld = BRepBuilderAPI_MakeWire()
+    for _q in range(4):
+        t_arc = _np.linspace(_q * _np.pi / 2, (_q + 1) * _np.pi / 2, N_ARC)
+        arc_pts = TColgp_HArray1OfPnt(1, N_ARC)
+        for _i in range(N_ARC):
+            arc_pts.SetValue(_i + 1, _oval_pt(t_arc[_i]))
+        arc_interp = GeomAPI_Interpolate(arc_pts, False, 1e-4)  # False = open spline
+        # Impose G1 (tangent) constraints at both endpoints so adjacent arcs are
+        # C1-continuous at the quadrant boundaries → no kinks on swept surfaces
+        arc_interp.Load(_oval_tang(t_arc[0]), _oval_tang(t_arc[-1]), True)
+        arc_interp.Perform()
+        if not arc_interp.IsDone():
+            sys.exit(f"ERROR: Oval arc {_q} interpolation failed")
+        profile_wire_bld.Add(BRepBuilderAPI_MakeEdge(arc_interp.Curve()).Edge())
+
+    if not profile_wire_bld.IsDone():
+        sys.exit("ERROR: Oval profile wire construction failed")
+    profile_wire = profile_wire_bld.Wire()
+    print("  Profile oval built (4-arc non-periodic spline).")
+else:
+    ellipse_geom = GC_MakeEllipse(profile_ax2, wire_r / 2, wire_a / 2).Value()
+    profile_edge = BRepBuilderAPI_MakeEdge(ellipse_geom).Edge()
+    profile_wire_bld = BRepBuilderAPI_MakeWire()
+    profile_wire_bld.Add(profile_edge)
+    profile_wire = profile_wire_bld.Wire()
+    print("  Profile ellipse built.")
 
 # -- Sweep profile along helix -------------------------------------------------
 print("Sweeping (this may take a moment)...")
@@ -214,15 +316,19 @@ spring_final = cut2.Shape()
 print("  Ends ground.")
 
 # -- Export STEP ---------------------------------------------------------------
+_step_name = ("ValveSpring_oval.step" if WIRE_PROFILE == "oval"
+              else "ValveSpring.step")
 writer = STEPControl_Writer()
 writer.Transfer(spring_final, STEPControl_AsIs)
-status = writer.Write("ValveSpring.step")
-print(f"Exported: ValveSpring.step  (status={status})")
+status = writer.Write(_step_name)
+print(f"Exported: {_step_name}  (status={status})")
 
 # -- Export STL ----------------------------------------------------------------
+_stl_name = ("ValveSpring_oval.stl" if WIRE_PROFILE == "oval"
+             else "ValveSpring.stl")
 BRepMesh_IncrementalMesh(spring_final, 0.08, False, 0.5)
 stl_writer = StlAPI_Writer()
-stl_writer.Write(spring_final, "ValveSpring.stl")
-print("Exported: ValveSpring.stl")
+stl_writer.Write(spring_final, _stl_name)
+print(f"Exported: {_stl_name}")
 
 print("=== CAD generation complete ===")
