@@ -134,7 +134,8 @@ def generate_abaqus_inp():
 
         # Allow Abaqus to reduce increment size for HARD contact convergence.
         # The CalculiX inp uses fixed 0.5 mm increments (min=max=0.5).  With
-        # HARD contact Abaqus may need smaller steps; set min to 0.02 mm.
+        # HARD contact Abaqus may need smaller steps; set min to 0.001 mm.
+        # Step 2 near full coil-bind may need 0.0001 mm — edit .inp directly if needed.
         # CONTACT CONTROLS STABILIZE adds viscous regularisation to prevent
         # contact chattering on the finer mesh (LMAX=1.0, ~617k line mesh).
         if after_static and not up.startswith("*"):
