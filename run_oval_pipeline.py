@@ -91,8 +91,8 @@ run(
         "SPRING_MESH_INP": OVAL_MESH,
         "SPRING_JOB":      OVAL_JOB,
         "SPRING_PLOT":     OVAL_PLOT,
-        "SPRING_L0":       "39.887",   # oval L0 (adjusted for larger wire_a_eff)
-        "SPRING_WIRE_A":   "3.209",    # oval effective axial wire extent
+        "SPRING_L0":       "39.471",   # oval L0 (c=0.1, 0.15 mm clearance)
+        "SPRING_WIRE_A":   "3.106",    # oval effective axial wire extent (c=0.1)
     },
     desc="Run FEA (oval)",
 )
@@ -135,14 +135,14 @@ subprocess.run(
 )
 subprocess.run(
     ["git", "-C", BASE, "commit", "-m",
-     "feat: oval wire cross-section FEA (formula 40) + comparison vs ellipse\n\n"
-     "- generate_spring.py: oval profile via GeomAPI_Interpolate periodic spline\n"
-     "  formula (40) DFE6113_5004_00, c=0.2, area-matched b=1.43585 mm\n"
-     "- mesh_spring.py / spring_analysis.py: env-var parameterisation\n"
-     "- compare_wire_profiles.py: oval vs ellipse vs measurement + WireComparison PDF\n"
-     "- run_oval_pipeline.py: end-to-end pipeline runner\n"
-     "- ValveSpring_FEA_Report.pdf: regenerated for oval geometry\n"
-     "- ValveSpring_WireComparison.pdf: new cross-section comparison document\n\n"
+     "tune oval c=0.1 to reduce constant force offset vs measurement\n\n"
+     "- generate_spring.py: OVAL_C 0.2->0.1, OVAL_B 1.43585->1.45392 (area-matched),\n"
+     "  clearance kept at 0.15 mm; L0_oval 39.887->39.471 mm\n"
+     "- compare_wire_profiles.py: updated OVAL_C, OVAL_B, L0_OVAL, S_PRELOAD_OVAL\n"
+     "- run_oval_pipeline.py: SPRING_L0=39.471, SPRING_WIRE_A=3.106\n"
+     "- c=0.2 had constant +34 N offset; c=0.1 reduces this to ~+20 N (F1~269 N).\n"
+     "  Further reduction blocked: oval wire is taller than ellipse, closed-coil\n"
+     "  pitch must stay >=2*ymax+0.15 mm (Gmsh constraint; tighter clearance fails)\n\n"
      "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"],
     check=False,
 )

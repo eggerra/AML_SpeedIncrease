@@ -8,7 +8,7 @@ section to ValveSpring_FEA_Report.pdf.
 Cross-section definitions
 --------------------------
 Ellipse  : x = a sin(t),  y = b cos(t)          a=1.83 mm, b=1.46 mm
-Oval     : x = a sin(t),  y = b cos(t) exp(c x)  a=1.83 mm, b=1.43585 mm, c=0.2
+Oval     : x = a sin(t),  y = b cos(t) exp(c x)  a=1.83 mm, b=1.45392 mm, c=0.1
            (formula (40), DFE6113_5004_00-MasterThesis-VATA, p.56)
 Both have the same cross-sectional area: A = pi * 1.83 * 1.46 = 8.394 mm^2
 """
@@ -38,20 +38,22 @@ XS_PLOT     = os.path.join(BASE, "wire_crosssection_comparison.png")
 REPORT_PDF  = os.path.join(BASE, "ValveSpring_WireComparison.pdf")
 
 L0          = 38.717     # ellipse free length [mm]
-L0_OVAL     = 39.887     # oval free length [mm]  (larger due to oval wire axial extent)
+L0_OVAL     = 39.471     # oval free length [mm]  (c=0.1, 0.15 mm clearance)
 L_INSTALLED = 31.6       # installed spring length [mm]
 L_FULL_LIFT = 21.6       # spring length at full valve lift [mm]
 S_PRELOAD   = L0 - L_INSTALLED      # 7.117 mm — ellipse compression at installed length
 S_FULL_LIFT = L0 - L_FULL_LIFT      # 17.117 mm — ellipse compression at full lift
-S_PRELOAD_OVAL   = L0_OVAL - L_INSTALLED   # 8.287 mm — oval compression at installed length
-S_FULL_LIFT_OVAL = L0_OVAL - L_FULL_LIFT   # 18.287 mm — oval compression at full lift
+S_PRELOAD_OVAL   = L0_OVAL - L_INSTALLED   # 7.871 mm — oval compression at installed length
+S_FULL_LIFT_OVAL = L0_OVAL - L_FULL_LIFT   # 17.871 mm — oval compression at full lift
 F_PRELOAD   = 249.0
 F_FULL_LIFT = 620.7
 
 # Oval parameters (formula 40)
-OVAL_C = 0.2
+# c=0.1 calibrated to minimise constant force offset vs measurement
+# (c=0.2 gave +34 N offset; c=0.1 + reduced 0.02 mm clearance gives ~+2 N)
+OVAL_C = 0.1
 OVAL_A = 1.83   # radial semi-axis [mm]   (= wire_r / 2)
-OVAL_B = 1.43585  # area-matched axial parameter [mm]
+OVAL_B = 1.45392  # area-matched axial parameter [mm]  (c=0.1, area=8.394 mm²)
 ELLI_A = 1.83
 ELLI_B = 1.46
 
@@ -371,7 +373,7 @@ story.append(tbl([
      f"{OVAL_A:.3f}", f"{OVAL_B:.5f}", f"{OVAL_C}",
      f"{A_oval:.4f}", f"{Ixx_o:.4f}", f"{Iyy_o:.4f}"],
     ["Difference",
-     "—", "−1.6%", "—", f"{(A_oval-A_ell)/A_ell*100:+.2f}%",
+     "—", f"{(OVAL_B-ELLI_B)/ELLI_B*100:+.1f}%", "—", f"{(A_oval-A_ell)/A_ell*100:+.2f}%",
      f"{(Ixx_o-Ixx_e)/Ixx_e*100:+.2f}%", f"{(Iyy_o-Iyy_e)/Iyy_e*100:+.2f}%"],
 ], col_widths=[100, 55, 65, 35, 55, 55, 55]))
 story.append(Paragraph(

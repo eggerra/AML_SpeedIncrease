@@ -102,10 +102,11 @@ WIRE_PROFILE = _os.environ.get(
 )
 # numpy version compatibility: trapezoid (>=2.0) vs trapz (<2.0)
 _trapz = getattr(_np, "trapezoid", None) or getattr(_np, "trapz")
-OVAL_C = 0.2      # oval parameter from formula (40): 0 < c <= 0.3
-# b_oval that makes oval_area(a=1.83, b, c=0.2) = pi*1.83*1.46 = 8.394 mm²
-# pre-solved numerically (see compare_wire_profiles.py for derivation):
-OVAL_B = 1.43585  # area-matched axial semi-parameter for oval [mm]
+OVAL_C = 0.1      # oval parameter from formula (40): 0 < c <= 0.3
+# b_oval that makes oval_area(a=1.83, b, c=OVAL_C) = pi*1.83*1.46 = 8.394 mm²
+# c=0.1 → b=1.45392 mm  (calibrated: reduces constant force offset vs measurement)
+# c=0.2 → b=1.43585 mm  (original value, too high forces due to larger L0)
+OVAL_B = 1.45392  # area-matched axial semi-parameter for oval [mm]
 
 # The oval wire is slightly taller in the axial direction than the ellipse.
 # If closed-end coil pitch = wire_a (ellipse height = 2.92mm) is used, the oval
