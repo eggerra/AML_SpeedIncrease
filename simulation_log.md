@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Last updated:** 2026-06-12 18:24:50  
+**Last updated:** 2026-06-12 18:25:11  
 **Job status:** RUNNING
 
 ## Current Progress (.sta)
@@ -27,15 +27,7 @@
 
 ## Recent .msg output
 ```
-Abaqus 2025.HF3                                  Date 12-Jun-2026   Time 18:22:55
-   For use by AVL LIST under license from Dassault Systemes or its subsidiary.
-
-                                                                                 
-                                                                                 
- STEP    1     INCREMENT     1     STEP TIME    0.00    
-
-
-                        S T E P       1     S T A T I C   A N A L Y S I S
+S T E P       1     S T A T I C   A N A L Y S I S
 
 
                                                                                           
@@ -146,4 +138,11 @@ Abaqus 2025.HF3                                  Date 12-Jun-2026   Time 18:22:5
                               3            162048
                               4            162096
       SPARSE STORAGE WAS USED FOR NODAL DATA ON WORKER THREADS
+ 
+	SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
+ 	1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
+        NUMBER OF EQUATIONS:  1146282
+        NUMBER OF RHS:        1
+        NUMBER OF FLOPS:      5.847e+11
+        SOLVER ELAPSED TIME:  13s
 ```
