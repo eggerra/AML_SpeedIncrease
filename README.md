@@ -190,6 +190,8 @@ from measurement and matches within 0.6 % at full lift.
 
 ## Running the pipeline
 
+### CalculiX pipeline (legacy)
+
 ```bash
 # 1. Generate CAD (FreeCAD's Python — needs pythonOCC)
 "C:/Users/.../FreeCAD 1.1/bin/python.exe" generate_spring.py
@@ -206,6 +208,57 @@ CalculiX 2.22 (bundled with FreeCAD 1.1), numpy, matplotlib.
 
 ---
 
+### Abaqus/Standard pipeline
+
+Requires Abaqus 2025 (HF3) installed at `N:\CAE\simulia\v2025FP2524\`.  
+Mesh is reused from the CalculiX pipeline (`ValveSpring_oval_mesh.inp` must already exist).
+
+```bash
+# Run the full Abaqus pipeline (inp generation + solver + postprocess + plot)
+python run_abaqus.py [cpus]   # cpus defaults to 4
+```
+
+This executes three phases automatically:
+1. **Input conversion** — reads `ValveSpring_oval_contact.inp` (CalculiX) and writes
+   `ValveSpring_oval_contact_abaqus.inp` with Abaqus-compatible output keywords
+2. **Solver** — runs `abaqus job=... cpus=N mp_mode=threads interactive`
+3. **Postprocess** — runs `abaqus python postprocess_abaqus.py` to extract reaction
+   forces from the `.odb`, then plots `spring_FvL_abaqus.png`
+
+**CalculiX → Abaqus conversion details:**
+
+| CalculiX keyword | Abaqus replacement | Notes |
+|---|---|---|
+| `*STEP, NLGEOM, INC=N` | `*STEP, NLGEOM=YES, INC=N` | Flag syntax |
+| `*NODE PRINT, ..., TOTALS=ONLY` | `*NODE PRINT, ..., TOTALS=YES` | `ONLY` not supported in Abaqus 2025 |
+| `*NODE FILE` | removed | CalculiX `.frd` format |
+| `*EL FILE` | removed | CalculiX `.frd` format |
+| `*CONTACT FILE` | removed | CalculiX `.frd` format |
+| — | `*OUTPUT, FIELD, FREQUENCY=N` | Abaqus `.odb` field output |
+| — | `*NODE OUTPUT` `U, RF` | Displacements + reaction forces |
+| — | `*ELEMENT OUTPUT` `S, MISES` | Stress tensor + von Mises |
+| — | `*CONTACT OUTPUT` `CSTRESS, CDISP` | Contact pressure + slip |
+
+**Contact penalty note:** The contact stiffness (`50 N/mm³`) in `*SURFACE BEHAVIOR,
+PRESSURE-OVERCLOSURE=LINEAR` was originally calibrated against CalculiX behaviour.
+Abaqus implements the same penalty formulation but with a different non-linear solver
+and contact tracking algorithm; the resulting force response may differ slightly (Abaqus
+2025 HF3 produces ~685 N at full lift vs. CalculiX ~621 N for the oval profile with this
+stiffness). Re-calibration of the contact penalty against measurement is recommended for
+production use.
+
+**Result files produced:**
+
+| File | Description |
+|---|---|
+| `ValveSpring_oval_contact_abaqus.inp` | Abaqus input deck (converted from CalculiX) |
+| `ValveSpring_oval_contact_abaqus.odb` | Abaqus result database (displacements, stress, contact) |
+| `ValveSpring_oval_contact_abaqus.dat` | Solver log with node-print reaction forces |
+| `ValveSpring_oval_contact_abaqus_rf.txt` | Extracted reaction forces: `s[mm]  F[N]` |
+| `spring_FvL_abaqus.png` | F–L plot (Abaqus FEA + measurement + analytical fit) |
+
+---
+
 ## Files
 
 | File | Description |
@@ -213,13 +266,17 @@ CalculiX 2.22 (bundled with FreeCAD 1.1), numpy, matplotlib.
 | `generate_spring.py` | Parametric CAD generator (pythonOCC). Variable pitch via `helix_z()`, D_pitch=0.063. |
 | `mesh_netgen.py` | Netgen mesher: C3D10, maxh=0.50 mm, orientation fix, mid-side node straightening, degenerate element filter. |
 | `spring_analysis.py` | CalculiX FEA: 2-step preload+lift, self-contact, result parsing, progressive-rate analytical model. |
+| `run_abaqus.py` | **Abaqus pipeline**: inp conversion + solver invocation + ODB postprocess + F-L plot. |
+| `postprocess_abaqus.py` | Abaqus Python script (run via `abaqus python`): extracts nodal RF from `.odb` → `_rf.txt`. |
 | `_viz_xsection.py` | Cross-section mesh density visualiser (`python _viz_xsection.py [z_mm]`). |
 | `mesh_contact_fine.geo` | Gmsh geo (reference/future use — Gmsh cannot produce volume mesh for this geometry). |
 | `ValveSpring.step` | STEP CAD (variable-pitch beehive helix, D_pitch=0.063, ground ends). |
 | `ValveSpring.stl` | STL for visualisation. |
-| `ValveSpring_mesh.inp` | Netgen C3D10 mesh (212k nodes, 118k elements). |
-| `ValveSpring_contact.inp` | CalculiX input deck (2-step NLGEOM, self-contact). |
-| `ValveSpring_contact.dat` | CalculiX reaction-force results. |
-| `ValveSpring_contact.frd` | CalculiX displacement + stress results (binary). |
-| `spring_FvL.png` | Force vs lift plot (FEA + analytical + measurement). |
-| `INT_Spring_measurement.txt` | Measured F–lift data (396 points, 0–10 mm valve lift). |
+| `ValveSpring_oval_mesh.inp` | C3D10 mesh for oval wire profile (~49k nodes, ~42k elements). |
+| `ValveSpring_oval_contact.inp` | CalculiX input deck (2-step NLGEOM, self-contact, oval profile). |
+| `ValveSpring_oval_contact_abaqus.inp` | Abaqus input deck (auto-generated from CalculiX by `run_abaqus.py`). |
+| `ValveSpring_oval_contact_abaqus.odb` | Abaqus result database (displacement, stress, contact). |
+| `ValveSpring_oval_contact_abaqus_rf.txt` | Extracted reaction forces: compression [mm] vs force [N]. |
+| `spring_FvL_abaqus.png` | Abaqus F–L plot (FEA + measurement + analytical fit). |
+| `spring_FvL_oval.png` | CalculiX F–L plot (oval profile). |
+| `INT_Spring_measurement.txt` | Measured F–lift data (398 points, 0–10 mm valve lift). |
