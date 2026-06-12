@@ -53,8 +53,8 @@ H_CLOSED  = N_CLOSED * WIRE_A
 H_ACTIVE  = L0 - 2 * H_CLOSED
 D_PITCH   = 0.0907                   # pitch gradient (must match generate_spring.py)
 pitch_mean = H_ACTIVE / N_ACTIVE     # mean active pitch [mm]
-Z_CONTACT_BOT = H_CLOSED + 0.5              # 6.416 mm — small buffer above ground end
-Z_CONTACT_TOP = L0 - H_CLOSED - 0.5        # 32.301 mm — small buffer below top end
+Z_CONTACT_BOT = grind_z + 0.5               # 1.25 mm — just above ground face; includes closed-end coils
+Z_CONTACT_TOP = Z_TOP - 0.5                # just below top face; includes top closed-end coils
 
 # -- Operating conditions (from INT_Spring_measurement.txt) --------------------
 L_INSTALLED = 31.6    # installed / preload length [mm]  (measurement start L1)

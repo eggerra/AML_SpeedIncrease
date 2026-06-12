@@ -82,7 +82,12 @@ def main():
                 # v.data is (RF1, RF2, RF3) for 3-D
                 rf3 += v.data[2]
 
-            results.append((t, abs(rf3)))
+            force = abs(rf3)
+            # Skip frames with non-physical RF (solid-height lock-up produces overflow values)
+            if force < 1e6:
+                results.append((t, force))
+            else:
+                print(f"    Skipped frame at t={t:.3f} mm: RF={force:.3e} N (non-physical)")
 
         cumulative_time += step.timePeriod
 

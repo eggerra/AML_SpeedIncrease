@@ -12,7 +12,7 @@ STEP  = os.environ.get("SPRING_STEP",     os.path.join(BASE, "ValveSpring.step")
 OUT   = os.environ.get("SPRING_MESH_OUT", os.path.join(BASE, "ValveSpring_mesh.inp"))
 FCSTD = os.environ.get("SPRING_FCSTD",   os.path.join(BASE, "ValveSpring_meshed.FCStd"))
 
-LMAX = 1.5
+LMAX = 1.0
 LMIN = 0.5
 
 LOG = os.path.join(BASE, "mesh_spring.log")

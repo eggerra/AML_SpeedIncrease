@@ -134,15 +134,15 @@ Wire cross-section and coil diameters are unchanged from the drawing.
 | Item | Detail |
 |------|--------|
 | Elements | C3D10 (10-node quadratic tetrahedra, straight mid-side nodes) |
-| Nodes / elements | 251 318 / 150 560 |
+| Nodes / elements | 382 100 / 235 495 (Abaqus pipeline, LMAX=1.0); 251 318 / 150 560 (legacy CalculiX, LMAX=1.5) |
 | Material | E = 273 131 MPa (×1.326 mesh correction, nominal 206 000), ν = 0.30 |
-| BCs — Step 1 | Bottom face fixed; top face compressed 0→7.1 mm (preload) |
-| BCs — Step 2 | Top face compressed further 7.1→17.1 mm (10 mm valve lift) |
-| Increment size | 0.5 mm fixed (14 + 20 = 34 increments total) |
+| BCs — Step 1 | Bottom face fixed; top face compressed 0→7.9 mm (preload) |
+| BCs — Step 2 | Top face compressed further 7.9→17.9 mm (10 mm valve lift) |
+| Increment size | 0.5 mm initial, min 0.02 mm (Abaqus auto-cutback) |
 | Analysis | NLGEOM static (large-displacement) |
-| Self-contact | SURFACE TO SURFACE, penalty stiffness 1000 N/mm³ (deliberately soft for convergence) |
-| Solver | CalculiX 2.22 (SPOOLES symmetric) |
-| Mesher | Netgen (netgen-mesher via FreeCAD 1.1 Python) |
+| Self-contact | SURFACE TO SURFACE, LINEAR penalty 50 N/mm³; `*CONTACT CONTROLS, STABILIZE=0.0002` per step |
+| Solver | Abaqus/Standard 2025 HF3 (4 threads); legacy: CalculiX 2.22 (SPOOLES) |
+| Mesher | Netgen (netgen-mesher via FreeCAD 1.1 Python), LMAX=1.0 mm |
 
 ### Meshing notes
 
@@ -166,25 +166,39 @@ The beehive helix geometry creates meshing challenges in two zones:
 
 ![Force vs Lift](spring_FvL.png)
 
-### Key findings (calibrated run — 2026-06-11)
+### Abaqus/Standard results (finer mesh, LMAX=1.0 — 2026-06-12)
+
+Mesh: 382 100 nodes / 235 495 C3D10 elements.
+
+**E-correction status:** The ×1.326 E-correction (206 000 → 273 131 MPa) was calibrated
+against the coarser LMAX=1.5 CalculiX mesh. The finer LMAX=1.0 mesh better captures
+torsional stiffness via more elements across the wire cross-section, so it over-predicts
+forces by ~40% with the same E. **Re-calibration of E for the LMAX=1.0 mesh is required**
+before comparing to measurement.
+
+| Quantity | Analytical (3-phase) | **Abaqus FEA (LMAX=1.0, E uncalibrated)** | Measurement |
+|----------|---------------------|------|-------------|
+| F @ preload (s=7.9 mm) | 249 N | **348 N (+40%)** | 249 N |
+| F @ full lift (s=17.9 mm) | 621 N | **>3800 N (coil bind)** | 621 N |
+
+FEA shows premature coil binding near full lift, consistent with over-stiff material.
+Recalibrate E by scaling: E\_new = E\_old × (F\_meas\_preload / F\_FEA\_preload) = 273 131 × (249/348) ≈ 195 400 MPa.
+
+**Note:** the last ODB frame at solid height produces a floating-point overflow in reaction
+force (non-physical). This frame is automatically skipped in postprocess_abaqus.py (threshold: RF > 1e6 N).
+
+### CalculiX results (coarser mesh, LMAX=1.5 — 2026-06-11, reference)
 
 Mesh: 251 318 nodes / 150 560 C3D10 elements.  
-**E-correction**: the 0.5 mm mesh under-predicts spring stiffness by ×1.326 due to coarse
-torsional discretisation (≈6 elements across the 2.92 mm wire) and unconstrained closed-coil
-zone compliance (h\_closed=5.9 mm per end). E is scaled from 206 000 to 273 131 MPa so that
-k\_FEA × s\_preload = F1\_measured. Stress magnitudes in the .frd output must be divided by
-1.326 to recover physical values; stress distributions are unaffected.
+**E-correction**: ×1.326 (206 000 → 273 131 MPa) calibrated to match F @ preload.
 
 | Quantity | Analytical (3-phase) | **FEA** | Measurement | FEA error |
 |----------|---------------------|---------|-------------|-----------|
-| F @ preload  (s=7.12 mm) | 249 N | **248 N** | 249 N | −0.5% |
-| F @ kink1    (lift=4.05 mm) | 389 N | — | 390.7 N | — |
-| F @ kink2    (lift=7.67 mm) | 522 N | — | 525.3 N | — |
-| F @ full lift (s=17.12 mm) | 617 N | **609 N** | 620.7 N | −1.9% |
+| F @ preload  (s=7.9 mm) | 249 N | **278 N** | 249 N | +11% |
+| F @ full lift (s=17.9 mm) | 621 N | **686 N** | 621 N | +10% |
 
-FEA output is at every 5th increment (FREQUENCY=5 in NODE PRINT) giving 7 data points
-across the full stroke. The 3-phase progressive stiffening (green curve) is calibrated
-from measurement and matches within 0.6 % at full lift.
+FEA output at every 5th increment (FREQUENCY=5). 3-phase progressive stiffening (green curve)
+calibrated from measurement matches within 0.6% at full lift.
 
 ---
 
@@ -234,18 +248,20 @@ This executes three phases automatically:
 | `*NODE FILE` | removed | CalculiX `.frd` format |
 | `*EL FILE` | removed | CalculiX `.frd` format |
 | `*CONTACT FILE` | removed | CalculiX `.frd` format |
+| `*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=LINEAR` | unchanged (kept as LINEAR) | HARD contact causes false 400mm penetrations on the fine mesh; LINEAR 50 N/mm³ passes through |
+| — | `*CONTACT CONTROLS, STABILIZE=0.0002` | Viscous regularisation per step (finer mesh) |
 | — | `*OUTPUT, FIELD, FREQUENCY=N` | Abaqus `.odb` field output |
 | — | `*NODE OUTPUT` `U, RF` | Displacements + reaction forces |
 | — | `*ELEMENT OUTPUT` `S, MISES` | Stress tensor + von Mises |
 | — | `*CONTACT OUTPUT` `CSTRESS, CDISP` | Contact pressure + slip |
 
-**Contact penalty note:** The contact stiffness (`50 N/mm³`) in `*SURFACE BEHAVIOR,
-PRESSURE-OVERCLOSURE=LINEAR` was originally calibrated against CalculiX behaviour.
-Abaqus implements the same penalty formulation but with a different non-linear solver
-and contact tracking algorithm; the resulting force response may differ slightly (Abaqus
-2025 HF3 produces ~685 N at full lift vs. CalculiX ~621 N for the oval profile with this
-stiffness). Re-calibration of the contact penalty against measurement is recommended for
-production use.
+**Contact convergence note:** Abaqus HARD contact diverges on the finer mesh (LMAX=1.0,
+382k nodes) because the contact search incorrectly pairs distant coils, generating 1500+
+simultaneous open/close events per iteration and penetration errors up to 400 mm. The
+`run_abaqus.py` converter therefore keeps the CalculiX `LINEAR` penalty formulation
+(50 N/mm³) unchanged — Abaqus supports the identical syntax and converges reliably at this
+mesh density. `*CONTACT CONTROLS, STABILIZE=0.0002` is still injected per step for
+additional viscous regularisation of contact chattering.
 
 **Result files produced:**
 
@@ -272,7 +288,7 @@ production use.
 | `mesh_contact_fine.geo` | Gmsh geo (reference/future use — Gmsh cannot produce volume mesh for this geometry). |
 | `ValveSpring.step` | STEP CAD (variable-pitch beehive helix, D_pitch=0.063, ground ends). |
 | `ValveSpring.stl` | STL for visualisation. |
-| `ValveSpring_oval_mesh.inp` | C3D10 mesh for oval wire profile (~49k nodes, ~42k elements). |
+| `ValveSpring_oval_mesh.inp` | C3D10 mesh for oval wire profile (382 100 nodes / 235 495 elements, LMAX=1.0 mm). |
 | `ValveSpring_oval_contact.inp` | CalculiX input deck (2-step NLGEOM, self-contact, oval profile). |
 | `ValveSpring_oval_contact_abaqus.inp` | Abaqus input deck (auto-generated from CalculiX by `run_abaqus.py`). |
 | `ValveSpring_oval_contact_abaqus.odb` | Abaqus result database (displacement, stress, contact). |
