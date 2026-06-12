@@ -97,6 +97,7 @@ def generate_abaqus_inp():
     i = 0
     node_print_freq = 5
     replacements = 0
+    after_static = False
 
     while i < len(lines):
         line = lines[i]
@@ -121,6 +122,38 @@ def generate_abaqus_inp():
         if up.startswith("*STEP") and "NLGEOM" in up and "NLGEOM=YES" not in up:
             line = line.replace("NLGEOM,", "NLGEOM=YES,").replace(
                 "NLGEOM ", "NLGEOM=YES ")
+            out_lines.append(line)
+            i += 1
+            continue
+
+        # Keep CalculiX LINEAR penalty contact as-is for Abaqus.
+        # Converting to HARD contact causes 1500+ simultaneous contact-open/close events
+        # per iteration on the finer mesh (LMAX=1.0, 382k nodes), producing 400mm+ false
+        # penetrations and immediate divergence. LINEAR penalty (50 N/mm³) is supported
+        # identically in Abaqus and converges reliably with the finer mesh.
+
+        # Allow Abaqus to reduce increment size for HARD contact convergence.
+        # The CalculiX inp uses fixed 0.5 mm increments (min=max=0.5).  With
+        # HARD contact Abaqus may need smaller steps; set min to 0.02 mm.
+        # CONTACT CONTROLS STABILIZE adds viscous regularisation to prevent
+        # contact chattering on the finer mesh (LMAX=1.0, ~617k line mesh).
+        if after_static and not up.startswith("*"):
+            after_static = False
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 4:
+                try:
+                    parts[2] = "0.001"  # min increment: 0.5 -> 0.001 mm
+                    line = ", ".join(parts)
+                except Exception:
+                    pass
+            out_lines.append(line)
+            out_lines.append("*CONTACT CONTROLS, STABILIZE=0.001")
+            i += 1
+            continue
+
+        # Track *STATIC card so next data line can be modified
+        if up.startswith("*STATIC"):
+            after_static = True
             out_lines.append(line)
             i += 1
             continue
