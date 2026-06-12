@@ -569,18 +569,24 @@ with PdfPages(PDF) as pdf:
                      fontweight="bold", pad=6)
 
     def section(ax_t, y, heading, lines, bg="#f0f4ff"):
-        box = FancyBboxPatch((0.01, y - 0.015*len(lines) - 0.04), 0.98,
-                              0.015*len(lines) + 0.06,
+        HEAD_GAP = 0.028   # heading baseline → first body line
+        LINE_DY  = 0.022   # body line spacing (axes fraction)
+        PAD_TOP  = 0.010   # box extends above heading
+        INTER    = 0.015   # gap below box before next section
+        n = len(lines)
+        box_top = y + PAD_TOP
+        box_bot = y - HEAD_GAP - n * LINE_DY
+        box = FancyBboxPatch((0.01, box_bot), 0.98, box_top - box_bot,
                               boxstyle="round,pad=0.01", linewidth=0.8,
                               edgecolor="#aac", facecolor=bg,
                               transform=ax_t.transAxes)
         ax_t.add_patch(box)
-        ax_t.text(0.04, y, heading, fontsize=9, fontweight="bold", color="#1a3a6b",
+        ax_t.text(0.04, y, heading, fontsize=8.5, fontweight="bold", color="#1a3a6b",
                   transform=ax_t.transAxes)
         for i, ln in enumerate(lines):
-            ax_t.text(0.05, y - 0.03 - i*0.040, ln, fontsize=8.5, color="#222",
+            ax_t.text(0.05, y - HEAD_GAP - i * LINE_DY, ln, fontsize=7.5, color="#222",
                       transform=ax_t.transAxes, family="monospace")
-        return y - 0.03 - len(lines)*0.040 - 0.03
+        return box_bot - INTER
 
     y = 0.96
     y = section(ax_txt, y, "Formula — DIN EN 13906-3 (oval wire):",
@@ -785,13 +791,13 @@ with PdfPages(PDF) as pdf:
 
     y = 0.97
     for title_s, bullets in sections:
-        ax.text(0.01, y, title_s, fontsize=11, fontweight="bold",
+        ax.text(0.01, y, title_s, fontsize=10, fontweight="bold",
                 color="#1a3a6b", transform=ax.transAxes)
-        y -= 0.04
+        y -= 0.032
         for b in bullets:
-            ax.text(0.025, y, b, fontsize=9, color="#222", transform=ax.transAxes)
-            y -= 0.036
-        y -= 0.016
+            ax.text(0.025, y, b, fontsize=8.5, color="#222", transform=ax.transAxes)
+            y -= 0.028
+        y -= 0.012
 
     pdf.savefig(fig, bbox_inches="tight"); plt.close(fig)
 
