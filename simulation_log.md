@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Last updated:** 2026-06-13 22:07:24  
+**Last updated:** 2026-06-13 22:09:09  
 **Job status:** RUNNING
 
 ## Current Progress (.sta)
@@ -108,9 +108,7 @@
 
 ## Recent .msg output
 ```
-DISP.    CORRECTION TOO LARGE COMPARED TO DISP.    INCREMENT
- 
-	SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
+SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
  	1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
         NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
@@ -228,4 +226,5 @@ DISP.    CORRECTION TOO LARGE COMPARED TO DISP.    INCREMENT
         NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
         NUMBER OF FLOPS:      7.811e+12
+        SOLVER ELAPSED TIME:  153s
 ```
