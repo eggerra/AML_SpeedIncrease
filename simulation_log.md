@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Last updated:** 2026-06-13 19:35:14  
+**Last updated:** 2026-06-13 19:37:03  
 **Job status:** RUNNING
 
 ## Current Progress (.sta)
@@ -108,8 +108,7 @@ DISCON ITERS ITERS  TIME/    TIME/LPF    TIME/LPF    MONITOR RIKS
 
 ## Recent .msg output
 ```
-1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
-        NUMBER OF EQUATIONS:  1146282
+NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
         NUMBER OF FLOPS:      7.938e+12
         SOLVER ELAPSED TIME:  156s
@@ -228,4 +227,5 @@ DISCON ITERS ITERS  TIME/    TIME/LPF    TIME/LPF    MONITOR RIKS
         NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
         NUMBER OF FLOPS:      9.399e+12
+        SOLVER ELAPSED TIME:  184s
 ```
