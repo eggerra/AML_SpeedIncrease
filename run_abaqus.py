@@ -126,11 +126,11 @@ def generate_abaqus_inp():
             i += 1
             continue
 
-        # Keep CalculiX LINEAR penalty contact as-is for Abaqus.
-        # Converting to HARD contact causes 1500+ simultaneous contact-open/close events
-        # per iteration on the finer mesh (LMAX=1.0, 382k nodes), producing 400mm+ false
-        # penetrations and immediate divergence. LINEAR penalty (50 N/mm³) is supported
-        # identically in Abaqus and converges reliably with the finer mesh.
+        # Using EXPONENTIAL pressure-overclosure (c0=0.1mm, p0=0).
+        # Previous run used LINEAR penalty (50 N/mm³) and failed at Step2 Inc40 with
+        # contact penetration oscillation driving the time increment below minimum.
+        # EXPONENTIAL gives a smooth continuous contact stiffness that avoids the
+        # abrupt contact open/close events which caused chattering on the finer mesh.
 
         # Allow Abaqus to reduce increment size for HARD contact convergence.
         # The CalculiX inp uses fixed 0.5 mm increments (min=max=0.5).  With

@@ -122,13 +122,15 @@ def main():
     lines.append("| Min increment | 0.02 mm | 0.001 mm |")
     lines.append("| Initial increment | 0.5 mm | 0.1 mm |")
     lines.append("| Contact STABILIZE | 0.0002 | 0.001 |")
-    lines.append("| Contact type | HARD | HARD |")
+    lines.append("| Contact type | LINEAR (50 N/mm³) | EXPONENTIAL (c0=0.1mm, p0=0) |")
     lines.append("| Threads | 4 | 4 |")
     lines.append("\n**Root cause of previous failure:** "
-                 "Contact penetration oscillation at coil-binding transition "
-                 "drove increment below minimum (0.02 mm). "
-                 "Nodes 143372 / 27501 showed repeated penetration errors. "
-                 "Fix: 20× finer min increment + 5× higher contact stabilization damping.")
+                 "Contact penetration oscillation at coil-binding transition in Step 2 "
+                 "(node 77533, SPRING_SURF self-contact). "
+                 "LINEAR penalty caused abrupt contact stiffness changes driving "
+                 "displacement corrections beyond increment tolerance (16 iterations, no convergence). "
+                 "Fix: EXPONENTIAL pressure-overclosure (c0=0.1mm) provides smooth continuous "
+                 "contact stiffness, avoiding the chattering that caused the minimum increment violation.")
 
     lines.append("\n## Raw .sta tail")
     lines.append("```")

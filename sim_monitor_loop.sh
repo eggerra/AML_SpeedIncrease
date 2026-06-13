@@ -13,6 +13,16 @@ cd "$BASE"
 
 echo "[sim_monitor] Started at $(date '+%Y-%m-%d %H:%M:%S')"
 
+# Wait up to 10 minutes for Abaqus to create the lock file
+echo "[sim_monitor] Waiting for job lock file to appear..."
+for i in $(seq 1 60); do
+    [ -f "$LCK" ] && break
+    sleep 10
+done
+if [ ! -f "$LCK" ]; then
+    echo "[sim_monitor] WARNING: lock file never appeared — job may not have started."
+fi
+
 while true; do
     # Update log
     python "$BASE/monitor_sim.py"
