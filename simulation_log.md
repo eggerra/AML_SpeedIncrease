@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Last updated:** 2026-06-13 23:28:34  
+**Last updated:** 2026-06-13 23:30:15  
 **Job status:** RUNNING
 
 ## Current Progress (.sta)
@@ -108,8 +108,7 @@
 
 ## Recent .msg output
 ```
-NUMBER OF EQUATIONS:  1146282
-        NUMBER OF RHS:        1
+NUMBER OF RHS:        1
         NUMBER OF FLOPS:      8.009e+12
         SOLVER ELAPSED TIME:  157s
 
@@ -228,4 +227,5 @@ NUMBER OF EQUATIONS:  1146282
         NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
         NUMBER OF FLOPS:      8.009e+12
+        SOLVER ELAPSED TIME:  157s
 ```
