@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Last updated:** 2026-06-13 20:46:17  
+**Last updated:** 2026-06-13 20:48:02  
 **Job status:** RUNNING
 
 ## Current Progress (.sta)
@@ -108,8 +108,7 @@
 
 ## Recent .msg output
 ```
-(SPRING_SURF,SPRING_SURF)
-   MAX. CONTACT FORCE ERROR 1.72955E-03 AT NODE 140748 OF CONTACT PAIR 
+MAX. CONTACT FORCE ERROR 1.72955E-03 AT NODE 140748 OF CONTACT PAIR 
    (SPRING_SURF,SPRING_SURF)
           PENETRATION ERROR TOO LARGE COMPARED TO DISPLACEMENT INCREMENT.
 
@@ -228,4 +227,5 @@
         NUMBER OF EQUATIONS:  1146282
         NUMBER OF RHS:        1
         NUMBER OF FLOPS:      8.161e+12
+        SOLVER ELAPSED TIME:  160s
 ```
