@@ -12,13 +12,12 @@ Bottom coils (large OD, softer) bind first as the spring is compressed.
 The remaining active coils are the stiffer small-OD top coils, producing an
 increasing spring rate (progressive behaviour) consistent with F1=250N / F2=620N.
 
-Geometry (2026-06-14) — drawing value n_closed=1.25 with calibrated free length:
-  n_closed=1.25 per end (drawing value; previous run used n_closed=2.026 which
-  gave only 4.548 active coils — spring went solid at s≈14 mm causing force spikes).
-  L0=38.717 mm is the calibrated free length matching F1=249 N at L1=31.6 mm.
-  With n_closed=1.25: n_active=6.1, h_active=31.417 mm, pitch_mean=5.150 mm.
-  D_pitch=0.0776 places kink1 at lift=4.05 mm from L1 (s_bind=11.167 mm):
-    s_bind = h_active*(1-D_pitch) - n_active*wire_a = 11.167 mm  ✓
+Geometry (2026-06-14) — drawing free length L0=46.1 mm, n_closed=1.25:
+  L0=46.1 mm is the drawing value (previously calibrated to 38.717 mm).
+  With n_closed=1.25: n_active=6.1, h_active=38.8 mm, pitch_mean=6.361 mm.
+  D_pitch=0.0629 places kink1 at lift=4.05 mm from L1 (s_bind=18.55 mm):
+    s_preload = 46.1-31.6 = 14.5 mm  ->  s_bind = 14.5+4.05 = 18.55 mm
+    D_pitch = 1 - (18.55 + 6.1*2.92)/38.8 = 0.0629  ✓
   Wire cross-section and coil diameters unchanged from drawing.
 """
 import math
@@ -33,32 +32,28 @@ Di_bot     = 15.90   # inner diameter bottom [mm]
 Di_top     = 12.00   # inner diameter top [mm]
 grind_z    = 0.75    # ground end cut depth [mm]
 
-# -- Calibrated parameters (drawing n_closed + calibrated free length) ---------
-# L0 = calibrated free length matching F1=249 N at L1=31.6 mm.
-# n_closed = drawing value 1.25 per end → n_active=6.1 (spring stays progressive
-#   through full valve lift; n_closed=2.026 caused force spike at s≈14 mm).
-L0         = 38.717  # free length [mm]   (drawing: 46.1 mm; actual measured: 38.717 mm)
+# -- Drawing parameters (free length + closed coils) ---------------------------
+L0         = 46.1    # free length [mm]   (drawing value)
 n_closed   = 1.25    # closed coils per end (drawing value)
 
 R_mean_bot = Di_bot / 2 + wire_r / 2   # = 9.78 mm
 R_mean_top = Di_top / 2 + wire_r / 2   # = 7.83 mm
 
 # -- Variable-pitch parameters -------------------------------------------------
-n_active   = nt - 2 * n_closed          # = 4.548 active coils
-h_closed   = n_closed * wire_a          # = 5.916 mm per dead end
-h_active   = L0 - 2 * h_closed         # = 26.885 mm active zone height
-pitch_mean = h_active / n_active        # = 5.911 mm mean active pitch
+n_active   = nt - 2 * n_closed          # = 6.1 active coils
+h_closed   = n_closed * wire_a          # = 3.65 mm per dead end
+h_active   = L0 - 2 * h_closed         # = 38.8 mm active zone height
+pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
 
 # D_pitch controls the pitch gradient.  D_pitch > 0 -> less pitch at bottom
 # (large OD), more pitch at top (small OD).
-# Derived for n_closed=1.25 geometry to place kink1 at lift=4.05 mm from L1:
-#   h_active = 38.717 - 2*1.25*2.92 = 31.417 mm,  n_active = 6.1,  pitch_mean = 5.150 mm
-#   s_bind = h_active*(1-D_pitch) - n_active*wire_a = s_preload + 4.05
-#   s_preload = L0-L1 = 38.717-31.6 = 7.117 mm  ->  s_bind = 11.167 mm
+# Derived for L0=46.1 mm geometry to place kink1 at lift=4.05 mm from L1=31.6 mm:
+#   h_active = 46.1 - 2*1.25*2.92 = 38.8 mm,  n_active = 6.1,  pitch_mean = 6.361 mm
+#   s_preload = L0-L1 = 46.1-31.6 = 14.5 mm  ->  s_bind = 14.5+4.05 = 18.55 mm
 #   -> D_pitch = 1 - (s_bind + n_active*wire_a)/h_active
-#             = 1 - (11.167 + 6.1*2.92)/31.417 = 0.0776
-# D_pitch = 0.0776  ->  p_bot = 4.750 mm (gap 1.830 mm), p_top = 5.550 mm
-D_pitch    = 0.0776
+#             = 1 - (18.55 + 6.1*2.92)/38.8 = 0.0629
+# D_pitch = 0.0629  ->  p_bot = 5.962 mm (gap 3.042 mm), p_top = 6.760 mm
+D_pitch    = 0.0629
 
 p_bot  = pitch_mean * (1 - D_pitch)
 p_top  = pitch_mean * (1 + D_pitch)

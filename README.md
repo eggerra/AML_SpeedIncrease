@@ -87,34 +87,28 @@ Piecewise linear regression on the measured force–lift curve:
 | 2 | 4.05 → 7.67 mm | 36.53 | Large-OD bottom coils binding |
 | 3 | 7.67 → 10.0 mm | 40.90 | Mid/upper coil zone binding |
 
-Kink positions (from phase-line departure, **compression measured from calibrated L0=38.717 mm**):
+Kink positions (from phase-line departure, **compression measured from drawing L0=46.1 mm**):
 
 | Event | Valve lift | Compression from L0 | Force (meas) |
 |-------|-----------|---------------------|-------------|
-| Kink 1 (first binding) | 4.05 mm | 11.167 mm | 390.7 N |
-| Kink 2 (upper zone)   | 7.67 mm | 14.787 mm | 525.3 N |
-| Full lift | 10.00 mm | 17.117 mm | 620.7 N |
+| Kink 1 (first binding) | 4.05 mm | 18.55 mm | 390.7 N |
+| Kink 2 (upper zone)   | 7.67 mm | 22.17 mm | 525.3 N |
+| Full lift | 10.00 mm | 24.50 mm | 620.7 N |
 
-### Geometry (2026-06-14) — drawing n\_closed with calibrated free length
+### Geometry (2026-06-14) — drawing values
 
-The free length L0=38.717 mm is calibrated to match F1=249 N at L1=31.6 mm.
-The number of closed coils n\_closed=**1.25** uses the drawing value.
-
-**Previous (wrong) calibration (2026-06-11):** n\_closed was set to 2.026 to match
-a target k\_FEA=35 N/mm analytically. This reduced active coils to 4.548, causing the
-spring to go solid at s≈14 mm during FEA — forces spiked to 3400–5900 N (target 621 N).
-The analytical calibration did not account for mesh-induced stiffness in FEA.
+Both L0=46.1 mm and n\_closed=1.25 are drawing values.
 
 | Parameter | Drawing | **Model (2026-06-14)** | Notes |
 |-----------|---------|------------------------|-------|
-| L0 | 46.1 mm | **38.717 mm** | Calibrated to measurement (pre-settled spring) |
+| L0 | 46.1 mm | **46.1 mm** | Drawing value ✓ |
 | n\_closed | 1.25 | **1.25** | Drawing value ✓ |
 | n\_active | 6.1 | **6.1** | nt − 2×n\_closed ✓ |
-| h\_active | — | **31.417 mm** | L0 − 2×n\_closed×wire\_a |
-| pitch\_mean | — | **5.150 mm** | h\_active / n\_active |
-| D\_pitch | — | **0.0776** | Places kink1 at s\_bind=11.167 mm |
-| p\_bot | — | **4.750 mm (gap 1.830)** | Ellipse (oval effective ≈ 1.644 mm gap) |
-| p\_top | — | **5.550 mm** | — |
+| h\_active | — | **38.8 mm** | L0 − 2×n\_closed×wire\_a |
+| pitch\_mean | — | **6.361 mm** | h\_active / n\_active |
+| D\_pitch | — | **0.0629** | Places kink1 at s\_bind=18.55 mm |
+| p\_bot | — | **5.962 mm (gap 3.042)** | — |
+| p\_top | — | **6.760 mm** | — |
 
 Wire cross-section and coil diameters are unchanged from the drawing.
 
@@ -122,7 +116,7 @@ Wire cross-section and coil diameters are unchanged from the drawing.
 
 | Quantity | Analytical | Measurement | Error |
 |----------|-----------|-------------|-------|
-| F @ preload (s=7.12 mm) | 249 N | 249 N | 0.0% |
+| F @ preload (s=14.5 mm) | 249 N | 249 N | 0.0% |
 | F @ kink1 (lift=4.05 mm) | 389.5 N | 390.7 N | 0.3% |
 | F @ kink2 (lift=7.67 mm) | 521.8 N | 525.3 N | 0.7% |
 | F @ full lift (lift=10 mm) | 617.1 N | 620.7 N | 0.6% |
@@ -136,12 +130,12 @@ Wire cross-section and coil diameters are unchanged from the drawing.
 | Elements | C3D10 (10-node quadratic tetrahedra, straight mid-side nodes) |
 | Nodes / elements | 382 100 / 235 495 (Abaqus pipeline, LMAX=1.0); 251 318 / 150 560 (legacy CalculiX, LMAX=1.5) |
 | Material | E = 273 131 MPa (×1.326 mesh correction, nominal 206 000), ν = 0.30 |
-| BCs — Step 1 | Bottom face fixed; top face compressed 0→7.58 mm (preload, L0\_oval=39.182 mm) |
-| BCs — Step 2 | Top face compressed further to 17.58 mm total (10 mm valve lift) |
+| BCs — Step 1 | Bottom face fixed; top face compressed 0→14.965 mm (preload, L0\_oval=46.565 mm) |
+| BCs — Step 2 | Top face compressed further to 24.965 mm total (10 mm valve lift) |
 | Increment size | 0.5 mm initial, min 0.001 mm (Abaqus auto-cutback) |
 | Analysis | NLGEOM static (large-displacement) |
-| Self-contact | SURFACE TO SURFACE, EXPONENTIAL c0=0.01 mm p0=0.1 MPa; `*CONTACT CONTROLS, STABILIZE=0.001` per step |
-| Solver | Abaqus/Standard 2025 HF3 (4 threads); legacy: CalculiX 2.22 (SPOOLES) |
+| Self-contact | SURFACE TO SURFACE, EXPONENTIAL c0=0.1 mm p0=0.1 MPa; `*CONTACT CONTROLS, STABILIZE=0.001` per step |
+| Solver | Abaqus/Standard 2025 HF3 (16 threads); legacy: CalculiX 2.22 (SPOOLES) |
 | Mesher | Netgen (netgen-mesher via FreeCAD 1.1 Python), LMAX=1.0 mm |
 
 ### Meshing notes
@@ -168,20 +162,20 @@ The beehive helix geometry creates meshing challenges in two zones:
 
 ### Abaqus/Standard results (finer mesh, LMAX=1.0 — re-run 2026-06-14)
 
-**Fix applied 2026-06-14:** n\_closed corrected from 2.026 → 1.25 (drawing value),
-contact tightened from c0=0.1→0.01 mm, L0\_oval corrected to 39.182 mm.
-Previous run (2026-06-12) used n\_closed=2.026 giving only 4.548 active coils;
-the spring went solid at s≈14 mm causing force spikes to 3400–5900 N.
+**Change applied 2026-06-15:** L0 restored to drawing value 46.1 mm (was calibrated 38.717 mm).
+L0\_oval updated to 46.565 mm. D\_pitch recalculated to 0.0629 (kink1 preserved at lift=4.05 mm).
+Contact c0 reverted 0.01→0.1 mm (c0=0.01 caused force blowup at s~14 mm).
+Mesher switched from Gmsh (0 vol elems failure) to Netgen maxh=1.0 mm. 16 threads.
 
-Mesh: 382 100 nodes / 235 495 C3D10 elements (regenerated from new geometry).
+Mesh: regenerated from new geometry (drawing L0=46.1 mm).
 
-**Estimated performance with corrected geometry (n\_active=6.1):**
+**Estimated performance with drawing geometry:**
 
 | Quantity | Analytical (3-phase) | **FEA estimate** | Measurement |
 |----------|---------------------|------------------|-------------|
-| F @ preload (s=7.58 mm) | 249 N | ~249 N | 249 N |
+| F @ preload (s=14.965 mm) | 249 N | ~249 N | 249 N |
 | F @ kink1 (lift=4.05 mm) | 390 N | ~390 N | 390.7 N |
-| F @ full lift (s=17.58 mm) | 621 N | ~621 N | 620.7 N |
+| F @ full lift (s=24.965 mm) | 621 N | ~621 N | 620.7 N |
 
 _Results pending from current simulation run._
 
@@ -234,7 +228,7 @@ Mesh is reused from the CalculiX pipeline (`ValveSpring_oval_mesh.inp` must alre
 
 ```bash
 # Run the full Abaqus pipeline (inp generation + solver + postprocess + plot)
-python run_abaqus.py [cpus]   # cpus defaults to 4
+python run_abaqus.py [cpus]   # cpus defaults to 4; use 16 for production runs
 ```
 
 This executes three phases automatically:

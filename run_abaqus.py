@@ -32,19 +32,19 @@ PLOT_FILE   = os.path.join(BASE, "spring_FvL_abaqus.png")
 MEAS_FILE   = os.path.join(BASE, "INT_Spring_measurement.txt")
 POST_SCRIPT = os.path.join(BASE, "postprocess_abaqus.py")
 
-CPUS_DEFAULT = 4
+CPUS_DEFAULT = 16
 
 # ── Spring parameters (oval, c=0.1, n_closed=1.25 — from spring_analysis.py) ──
 # L0_oval = h_active + 2*n_closed*wire_a_eff_oval
-#         = 31.417 + 2*1.25*3.106 = 39.182 mm   (was 39.471 with n_closed=2.026)
-L0          = 39.182   # oval free length [mm]
+#         = 38.8 + 2*1.25*3.106 = 46.565 mm   (drawing L0=46.1 mm ellipse basis)
+L0          = 46.565   # oval free length [mm]
 L_INSTALLED = 31.6
 VALVE_LIFT  = 10.0
 L_FULL_LIFT = 21.6
 F_PRELOAD   = 249.0
 F_FULL_LIFT = 620.7
-S_PRELOAD   = L0 - L_INSTALLED    # 7.871 mm
-S_FULL_LIFT = L0 - L_FULL_LIFT    # 17.871 mm
+S_PRELOAD   = L0 - L_INSTALLED    # 14.965 mm
+S_FULL_LIFT = L0 - L_FULL_LIFT    # 24.965 mm
 
 LIFT_KINK1 = 4.05
 LIFT_KINK2 = 7.67

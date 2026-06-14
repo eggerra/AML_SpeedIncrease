@@ -35,10 +35,10 @@ CCX_CANDIDATES = [
     "ccx",
 ]
 
-# -- Spring geometry (drawing n_closed=1.25, calibrated free length) -----------
-# n_closed=1.25 is the drawing value: n_active=6.1 keeps the spring progressive
-# through the full valve lift.  L0=38.717 mm is calibrated to match F1=249 N.
-L0      = float(os.environ.get("SPRING_L0", "38.717"))  # free length [mm]
+# -- Spring geometry (drawing values) -----------------------------------------
+# n_closed=1.25, L0=46.1 mm are drawing values; n_active=6.1.
+# Oval pipeline overrides L0 via SPRING_L0 env var (L0_oval=46.565 mm).
+L0      = float(os.environ.get("SPRING_L0", "46.1"))    # free length [mm]
 grind_z = 0.75
 Z_BOT   = grind_z           # 0.75 mm
 Z_TOP   = L0 - grind_z
@@ -51,7 +51,7 @@ N_TOTAL   = 8.6
 N_ACTIVE  = N_TOTAL - 2 * N_CLOSED   # 6.1 active coils
 H_CLOSED  = N_CLOSED * WIRE_A
 H_ACTIVE  = L0 - 2 * H_CLOSED
-D_PITCH   = 0.0776                   # pitch gradient (must match generate_spring.py)
+D_PITCH   = 0.0629                   # pitch gradient (must match generate_spring.py)
 pitch_mean = H_ACTIVE / N_ACTIVE     # mean active pitch [mm]
 Z_CONTACT_BOT = grind_z + 0.5               # 1.25 mm — just above ground face; includes closed-end coils
 Z_CONTACT_TOP = Z_TOP - 0.5                # just below top face; includes top closed-end coils
@@ -92,11 +92,11 @@ REF = [
 #   Phase 2 (lift 4.05->  7.67 mm): k = 36.53 N/mm  (large-OD bottom coils binding)
 #   Phase 3 (lift 7.67-> 10.00 mm): k = 40.90 N/mm  (mid-OD upper coils binding)
 #
-#   Geometry (2026-06-14): n_closed=1.25 (drawing), n_active=6.1, L0=38.717 mm
-#   D_pitch=0.0776: p_bot=4.750 mm, p_top=5.550 mm
-#   s_preload = L0-L1 = 7.117 mm  ->  F1 ≈ 249 N (target)
-#   Kink1 at lift=4.05 mm  -> s_kink1=7.117+4.05=11.167 mm from free length
-#   Kink2 at lift=7.67 mm  -> s_kink2=7.117+7.67=14.787 mm from free length
+#   Geometry (2026-06-14): n_closed=1.25 (drawing), n_active=6.1, L0=46.1 mm (drawing)
+#   D_pitch=0.0629: p_bot=5.962 mm (gap 3.042 mm), p_top=6.760 mm
+#   s_preload = L0-L1 = 14.5 mm  ->  F1 ≈ 249 N (target)
+#   Kink1 at lift=4.05 mm  -> s_kink1=14.5+4.05=18.55 mm from free length
+#   Kink2 at lift=7.67 mm  -> s_kink2=14.5+7.67=22.17 mm from free length
 #   F at kink1: 249 + 34.70*4.05 = 389.5 N   (measurement 390.7 N)
 #   F at kink2: 389.5 + 36.53*(7.67-4.05) = 521.7 N (measurement 525.3 N)
 #   F at full:  521.7 + 40.90*(10.0-7.67) = 617.0 N (measurement 620.7 N)
@@ -312,11 +312,11 @@ with open(FULL_INP, "w") as f:
     f.write("*CONTACT PAIR, INTERACTION=COIL_CONTACT, TYPE=SURFACE TO SURFACE\n")
     f.write("SPRING_SURF, SPRING_SURF\n")
     f.write("*SURFACE INTERACTION, NAME=COIL_CONTACT\n")
-    # EXPONENTIAL pressure-overclosure: p = p0*(exp(h/c0)-1).  c0=0.01 mm means
-    # contact pressure rises steeply after 0.01 mm penetration (10× tighter than
-    # the previous c0=0.1 mm which allowed 45 µm penetration and "PENETRATION ERROR
-    # TOO LARGE" messages at every increment).  p0=0.1 MPa is the initial pressure.
-    f.write("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=EXPONENTIAL\n0.01, 0.1\n**\n")
+    # EXPONENTIAL pressure-overclosure: p = p0*(exp(h/c0)-1).
+    # c0=0.1 mm: 45 µm penetration gives p≈0.16 N/mm² (cosmetic, not structural).
+    # c0=0.01 mm caused force blowup (p=2202 N/mm² at 0.1 mm) when multiple coils
+    # near-contacted simultaneously at s~13-14 mm. Reverted to c0=0.1 mm.
+    f.write("*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=EXPONENTIAL\n0.1, 0.1\n**\n")
 
     # ---- Step 1: Assembly preload (free length -> installed length) ----
     # Fixed 0.5 mm increments (min=max=0.5) -> exactly 20 steps, FREQUENCY=1

@@ -62,25 +62,25 @@ def update_log(stage, status, extra=""):
     )
     if extra:
         entry += f"{extra}\n"
-    with open(SIM_LOG, "a") as f:
+    with open(SIM_LOG, "a", encoding="utf-8") as f:
         f.write(entry)
     print(f"  [simulation_log] {stage}: {status}")
+
 
 
 # =============================================================================
 # Initialise log for this run
 # =============================================================================
-with open(SIM_LOG, "w") as f:
+with open(SIM_LOG, "w", encoding="utf-8") as f:
     f.write(
         f"# Simulation Run Log — {ABQ_JOB}\n\n"
         f"**Run started:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         f"**Job:** {ABQ_JOB}\n\n"
-        f"## Fix applied\n"
-        f"- `n_closed`: 2.026 → 1.25 (drawing value)\n"
-        f"- `n_active`: 4.548 → 6.1 (spring no longer goes solid at s≈14 mm)\n"
-        f"- `D_pitch`:  0.0907 → 0.0776 (kink1 preserved at lift=4.05 mm)\n"
-        f"- `L0_oval`:  39.471 → 39.182 mm\n"
-        f"- Contact:    EXPONENTIAL c0=0.1 mm → c0=0.01 mm (10× tighter penetration)\n\n"
+        f"## Change applied\n"
+        f"- `L0`:       38.717 → 46.1 mm (drawing value restored)\n"
+        f"- `L0_oval`:  39.182 → 46.565 mm (38.8 + 2×1.25×3.106)\n"
+        f"- `D_pitch`:  0.0776 → 0.0629 (kink1 preserved at lift=4.05 mm; s_bind=18.55 mm)\n"
+        f"- `n_closed`: 1.25 (drawing, unchanged)\n\n"
         f"## Progress\n"
     )
 
@@ -91,7 +91,7 @@ update_log("CAD generation", "RUNNING")
 run(
     [FREECAD, os.path.join(BASE, "generate_spring.py")],
     env={"SPRING_PROFILE": "oval"},
-    desc="Generate oval STEP (n_closed=1.25, D_pitch=0.0776)",
+    desc="Generate oval STEP (n_closed=1.25, L0=46.1, D_pitch=0.0629)",
 )
 if not os.path.isfile(OVAL_STEP):
     update_log("CAD generation", "FAILED — STEP file not created")
@@ -102,15 +102,15 @@ update_log("CAD generation", f"DONE — {OVAL_STEP} ({sz} kB)")
 # =============================================================================
 # 2. Mesh oval STEP
 # =============================================================================
-update_log("Meshing", "RUNNING — LMAX=1.0 mm, Netgen (may take 5-15 min)")
+update_log("Meshing", "RUNNING — maxh=1.0 mm, Netgen (may take 5-15 min)")
 run(
-    [FREECAD, os.path.join(BASE, "mesh_spring.py")],
+    [FREECAD, os.path.join(BASE, "mesh_netgen.py")],
     env={
         "SPRING_STEP":     OVAL_STEP,
         "SPRING_MESH_OUT": OVAL_MESH,
-        "SPRING_FCSTD":    OVAL_FCSTD,
+        "SPRING_MAXH":     "1.0",
     },
-    desc="Mesh oval STEP (Netgen LMAX=1.0 mm)",
+    desc="Mesh oval STEP (Netgen maxh=1.0 mm)",
 )
 if not os.path.isfile(OVAL_MESH):
     update_log("Meshing", "FAILED — mesh file not created")
@@ -129,7 +129,7 @@ run(
         "SPRING_MESH_INP": OVAL_MESH,
         "SPRING_JOB":      OVAL_JOB,
         "SPRING_PLOT":     os.path.join(BASE, "spring_FvL_ccx.png"),
-        "SPRING_L0":       "39.182",   # oval L0: 31.417 + 2*1.25*3.106
+        "SPRING_L0":       "46.565",   # oval L0: 38.8 + 2*1.25*3.106 (drawing L0=46.1)
         "SPRING_WIRE_A":   "3.106",    # oval wire eff. axial extent (c=0.1)
     },
     desc="Write FEA INP (spring_analysis.py)",
@@ -147,8 +147,8 @@ update_log("FEA input", f"DONE — {OVAL_INP} ({sz} kB)")
 update_log("Abaqus solve", "RUNNING — this typically takes 10-20 hours")
 t_abq_start = time.time()
 run(
-    [sys.executable, os.path.join(BASE, "run_abaqus.py")],
-    desc="Abaqus/Standard solve + postprocess",
+    [sys.executable, os.path.join(BASE, "run_abaqus.py"), "16"],
+    desc="Abaqus/Standard solve + postprocess (16 cpus)",
 )
 elapsed_abq = time.time() - t_abq_start
 
@@ -170,7 +170,7 @@ else:
 # =============================================================================
 # 5. Final simulation log entry
 # =============================================================================
-with open(SIM_LOG, "a") as f:
+with open(SIM_LOG, "a", encoding="utf-8") as f:
     f.write(
         f"\n## Summary\n"
         f"- Total wall time: {(time.time()-t_abq_start)/3600:.1f}h (Abaqus only)\n"
@@ -195,13 +195,14 @@ files_to_stage = [
 ]
 subprocess.run(["git", "-C", BASE, "add"] + files_to_stage, check=False)
 commit_msg = (
-    "fix: n_closed=1.25 (drawing), tighter contact, correct L0_oval\n\n"
-    "- n_closed 2.026->1.25 (drawing): n_active 4.548->6.1; spring no longer goes\n"
-    "  solid at s~14 mm -- forces were spiking to 3400-5900 N (target F2=621 N)\n"
-    "- D_pitch 0.0907->0.0776: kink1 preserved at lift=4.05 mm (s=11.167 mm)\n"
-    "- Contact EXPONENTIAL c0 0.1->0.01 mm: eliminates 45 um penetration errors\n"
-    "- L0_oval 39.471->39.182 mm: h_active=31.417+2*1.25*3.106\n"
-    "- E_MOD=273131 MPa retained (LMAX=1.0 mm mesh correction still needed)\n\n"
+    "feat: drawing L0=46.1 mm, fix contact blowup, switch to Netgen mesher\n\n"
+    "- L0 38.717->46.1 mm (drawing value; was calibrated to measured spring)\n"
+    "- L0_oval 39.182->46.565 mm: 38.8 + 2*1.25*3.106 mm\n"
+    "- D_pitch 0.0776->0.0629: kink1 preserved at lift=4.05 mm (s_bind=18.55 mm)\n"
+    "- Contact EXPONENTIAL c0 0.01->0.1 mm: fixes force blowup at s~14 mm\n"
+    "  (c0=0.01 gave p=2202 N/mm2 at 0.1 mm overclosure -> non-physical coil forces)\n"
+    "- Mesher: mesh_spring.py (Gmsh, 0 vol elems) -> mesh_netgen.py (Netgen maxh=1.0)\n"
+    "- Abaqus solver: 16 cpus (mp_mode=threads)\n\n"
     "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 )
 subprocess.run(["git", "-C", BASE, "commit", "-m", commit_msg], check=False)
