@@ -112,3 +112,12 @@
 - Inc 79: 35 SDIs + 9 equil iters = 44 total -- heaviest increment yet, but converged
 - Step size holding at ~0.030-0.045 mm; solver in deepest contact zone
 - Kink2 at lift=7.67 mm is 1.07 mm ahead (~24-35 more increments at current step size)
+
+## 2026-06-14 16:44:51  --  Abaqus/Standard Step 2, Inc 88, lift=6.87 mm / 10 mm
+**Status:** RUNNING -- 69% complete, grinding through dense bind zone
+
+- Step 2 (valve lift): inc 88, lift=6.87 mm of 10 mm (69%)
+- Inc 80-88: all converged in 1 attempt; step sizes 0.021-0.045 mm (fine stepping)
+- SDI counts per inc: 14, 11, 9, 7, 9, 6, 4, 5, 8 -- decreasing trend, contact stabilising
+- No cutbacks since inc 75; solver working steadily
+- Kink2 at lift=7.67 mm is 0.80 mm ahead (~25-38 more increments at current rate)
