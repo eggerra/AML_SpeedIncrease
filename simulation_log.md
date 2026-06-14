@@ -65,3 +65,12 @@
   - Incs 16-17: 3 severe discontinuity iterations (coil binding events)
   - Inc 18: 5 SDIs, 1U -- Abaqus cutting back; still converging
 - ~67% of lift remaining (6.72 mm); expect further cutbacks near coil bind zone
+
+## 2026-06-14 15:54:55  --  Abaqus/Standard Step 2, Inc 37, lift=3.91 mm / 10 mm
+**Status:** RUNNING -- 39% of valve lift complete, converging steadily
+
+- Step 2 (valve lift): inc 37, lift=3.91 mm of 10 mm (39%)
+- Inc sizes stabilised at ~0.026-0.040 mm (fine stepping through early bind zone)
+- All recent increments converging in 1 attempt, 3-5 SDIs, 4-6 total iters (healthy)
+- Approaching kink1 at lift=4.05 mm (s=11.63 mm) -- first coil binding event
+- No unconverged cutbacks since inc 18; solver tracking contact smoothly
