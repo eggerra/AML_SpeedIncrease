@@ -221,3 +221,12 @@
 - Inc 160-169: stable at 0.0028-0.0095 mm; step sizes slowly growing again
 - SDIs 1-8, equil iters 0-6 -- converging cleanly
 - 0.13 mm remaining; ~14-46 increments to finish at current rate
+
+## 2026-06-14 18:44:52  --  Abaqus/Standard Step 2, Inc 172, lift=9.88 mm / 10 mm
+**Status:** RUNNING -- 99% complete, 0.12 mm remaining, frequent small cutbacks
+
+- Step 2 (valve lift): inc 172 (attempt 2), lift=9.88 mm of 10 mm (99%)
+- Inc 170: cutback (1U, 7 SDIs), recovered at 0.0036 mm
+- Inc 172: another cutback (1U, 13 SDIs), recovered at 0.0020 mm
+- Step sizes oscillating 0.002-0.014 mm as final coil contacts seat
+- 0.12 mm remaining; solver grinding through very tight contact at near-full compression
