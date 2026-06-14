@@ -121,3 +121,12 @@
 - SDI counts per inc: 14, 11, 9, 7, 9, 6, 4, 5, 8 -- decreasing trend, contact stabilising
 - No cutbacks since inc 75; solver working steadily
 - Kink2 at lift=7.67 mm is 0.80 mm ahead (~25-38 more increments at current rate)
+
+## 2026-06-14 16:54:50  --  Abaqus/Standard Step 2, Inc 99, lift=7.14 mm / 10 mm
+**Status:** RUNNING -- 71% complete, steady progress toward kink2
+
+- Step 2 (valve lift): inc 99, lift=7.14 mm of 10 mm (71%)
+- Inc 89-99: all 1 attempt, no cutbacks; step sizes 0.018-0.041 mm
+- SDI counts low (2-5) and stable -- coil contact pattern settled
+- Equil iters 3-6 per increment -- healthy convergence
+- Kink2 at lift=7.67 mm is 0.53 mm ahead (~15-30 more increments)
