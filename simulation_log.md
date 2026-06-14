@@ -74,3 +74,11 @@
 - All recent increments converging in 1 attempt, 3-5 SDIs, 4-6 total iters (healthy)
 - Approaching kink1 at lift=4.05 mm (s=11.63 mm) -- first coil binding event
 - No unconverged cutbacks since inc 18; solver tracking contact smoothly
+
+## 2026-06-14 16:04:51  --  Abaqus/Standard Step 2, Inc 56, lift=4.67 mm / 10 mm
+**Status:** RUNNING -- 47% of valve lift complete, past kink1
+
+- Step 2 (valve lift): inc 56, lift=4.67 mm of 10 mm (47%)
+- Kink1 (lift=4.05 mm, first coil bind) passed cleanly at inc ~42
+- Inc size stable at 0.03955 mm; all increments 1 attempt, 1-2 SDIs, 4-6 iters
+- Next milestone: kink2 at lift=7.67 mm (rate change 36.5->40.9 N/mm)
