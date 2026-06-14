@@ -91,8 +91,8 @@ run(
         "SPRING_MESH_INP": OVAL_MESH,
         "SPRING_JOB":      OVAL_JOB,
         "SPRING_PLOT":     OVAL_PLOT,
-        "SPRING_L0":       "39.471",   # oval L0 (c=0.1, 0.15 mm clearance)
-        "SPRING_WIRE_A":   "3.106",    # oval effective axial wire extent (c=0.1)
+        "SPRING_L0":       "39.182",   # oval L0: h_active=31.417 + 2*1.25*3.106 (n_closed=1.25)
+        "SPRING_WIRE_A":   "3.106",    # oval effective axial wire extent (c=0.1, unchanged)
     },
     desc="Run FEA (oval)",
 )

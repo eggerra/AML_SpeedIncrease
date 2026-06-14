@@ -34,8 +34,10 @@ POST_SCRIPT = os.path.join(BASE, "postprocess_abaqus.py")
 
 CPUS_DEFAULT = 4
 
-# ── Spring parameters (oval, c=0.1 — from spring_analysis.py) ─────────────
-L0          = 39.471   # oval free length [mm]
+# ── Spring parameters (oval, c=0.1, n_closed=1.25 — from spring_analysis.py) ──
+# L0_oval = h_active + 2*n_closed*wire_a_eff_oval
+#         = 31.417 + 2*1.25*3.106 = 39.182 mm   (was 39.471 with n_closed=2.026)
+L0          = 39.182   # oval free length [mm]
 L_INSTALLED = 31.6
 VALVE_LIFT  = 10.0
 L_FULL_LIFT = 21.6

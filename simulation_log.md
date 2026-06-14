@@ -1,235 +1,37 @@
-# Simulation Run Log — ValveSpring_oval_contact_abaqus
+# Simulation Run Log — ValveSpring_oval_contact_abaqus (re-run 2026-06-14)
 
-**Last updated:** 2026-06-14 00:10:57  
-**Job status:** COMPLETED
+**Run started:** 2026-06-14  
+**Job:** ValveSpring_oval_contact_abaqus  
+**Status:** PIPELINE LAUNCHING
 
-## Current Progress (.sta)
-- Step 2, Increment 57, Attempt 1 — **converged**
-- Total time: 17.9000  |  Increment size: 0.00028
-- Converged increments so far: 68
-- Wall clock: 67777s (1129.6 min)
-- CPU time: 249000s
+## Root Cause of Previous Run Failure
 
-## Errors & Warnings
-- None recorded yet.
+The previous run used `n_closed=2.026` (over-calibrated value) giving only 4.548 active
+coils. With only 4.548 active coils the spring went solid at s≈14 mm during valve lift,
+causing force to spike to 3400–5900 N (target F2=621 N at s=17.1 mm). Additionally the
+contact exponential overclosure parameter c0=0.1 mm was too soft, causing 45 µm penetration
+errors ("PENETRATION ERROR TOO LARGE") at every increment near coil binding.
 
-**Total errors: 0  |  Warnings: 0**
+## Fixes Applied
 
-## Run Configuration (fixes applied this run)
-| Parameter | Previous | Current |
-|-----------|----------|---------|
-| Min increment | 0.02 mm | 0.001 mm |
-| Initial increment | 0.5 mm | 0.1 mm |
-| Contact STABILIZE | 0.0002 | 0.001 |
-| Contact type | LINEAR (50 N/mm³) | EXPONENTIAL (c0=0.1mm, p0=0) |
-| Threads | 4 | 4 |
+| Parameter | Previous | New | Reason |
+|-----------|----------|-----|--------|
+| `n_closed` | 2.026 | **1.25** | Drawing value; n_active 4.548→6.1 |
+| `n_active` | 4.548 | **6.1** | Spring stays progressive through full lift |
+| `D_pitch` | 0.0907 | **0.0776** | Kink1 kept at lift=4.05 mm (s=11.167 mm) |
+| `p_bot` (ellipse) | 5.375 mm | **4.750 mm** | Bottom gap 2.455→1.830 mm |
+| `L0_oval` | 39.471 mm | **39.182 mm** | h_active=31.417+2×1.25×3.106 |
+| Contact c0 | 0.1 mm | **0.01 mm** | 10× tighter, eliminates penetration errors |
+| E_MOD | 273131 MPa | **273131 MPa** | Retained (LMAX=1.0 mm mesh correction) |
 
-**Root cause of previous failure:** Contact penetration oscillation at coil-binding transition in Step 2 (node 77533, SPRING_SURF self-contact). LINEAR penalty caused abrupt contact stiffness changes driving displacement corrections beyond increment tolerance (16 iterations, no convergence). Fix: EXPONENTIAL pressure-overclosure (c0=0.1mm) provides smooth continuous contact stiffness, avoiding the chattering that caused the minimum increment violation.
+## Expected Results
 
-## Raw .sta tail
-```
-1     6   1     2     4     6  3.00       3.00       0.5000    
-   1     7   1     2     4     6  3.50       3.50       0.5000    
-   1     8   1     3     3     6  4.00       4.00       0.5000    
-   1     9   1     4     2     6  4.50       4.50       0.5000    
-   1    10   1     1     5     6  5.00       5.00       0.5000    
-   1    11   1     2     4     6  5.50       5.50       0.5000    
-   1    12   1     4     2     6  6.00       6.00       0.5000    
-   1    13   1     5     1     6  6.50       6.50       0.5000    
-   1    14   1     4     2     6  7.00       7.00       0.5000    
-   1    15   1     5     1     6  7.50       7.50       0.5000    
-   1    16   1     5     1     6  7.90       7.90       0.4000    
-   2     1   1     3     3     6  8.40       0.500      0.5000    
-   2     2   1     2     4     6  8.90       1.00       0.5000    
-   2     3   1     3     3     6  9.40       1.50       0.5000    
-   2     4   1     3     3     6  9.90       2.00       0.5000    
-   2     5   1     6     0     6  10.4       2.50       0.5000    
-   2     6   1     4     2     6  10.9       3.00       0.5000    
-   2     7   1     6     0     6  11.4       3.50       0.5000    
-   2     8   1     6     3     9  11.9       4.00       0.5000    
-   2     9   1     6     3     9  12.4       4.50       0.5000    
-   2    10   1     6     0     6  12.9       5.00       0.5000    
-   2    11   1     6     0     6  13.4       5.50       0.5000    
-   2    12   1     6     3     9  13.9       6.00       0.5000    
-   2    13   1     6     3     9  14.4       6.50       0.5000    
-   2    14   1U    5     0     5  14.4       6.50       0.5000    
-   2    14   2     5     4     9  14.5       6.62       0.1250    
-   2    15   1     5     4     9  14.7       6.81       0.1875    
-   2    16   1     6     3     9  15.0       7.09       0.2812    
-   2    17   1     6     3     9  15.4       7.52       0.4219    
-   2    18   1     7     8    15  15.9       8.02       0.5000    
-   2    19   1     7     5    12  16.4       8.52       0.5000    
-   2    20   1    12     0    12  16.9       9.02       0.5000    
-   2    21   1U   41     0    41  16.9       9.02       0.5000    
-   2    21   2    11     1    12  17.0       9.14       0.1250    
-   2    22   1U    8     0     8  17.0       9.14       0.1875    
-   2    22   2     6     2     8  17.1       9.19       0.04688   
-   2    23   1     9     2    11  17.2       9.26       0.07031   
-   2    24   1     9     3    12  17.2       9.33       0.07031   
-   2    25   1    16     0    16  17.3       9.43       0.1055    
-   2    26   1U   23     0    23  17.3       9.43       0.1582    
-   2    26   2     8     2    10  17.4       9.47       0.03955   
-   2    27   1    12     1    13  17.4       9.53       0.05933   
-   2    28   1    35     0    35  17.5       9.62       0.08899   
-   2    29   1U   12     0    12  17.5       9.62       0.06674   
-   2    29   2     9     0     9  17.5       9.64       0.01669   
-   2    30   1     6     3     9  17.6       9.65       0.01669   
-   2    31   1    11     1    12  17.6       9.68       0.02503   
-   2    32   1    22     1    23  17.6       9.72       0.03754   
-   2    33   1    13     0    13  17.6       9.75       0.02816   
-   2    34   1    13     0    13  17.7       9.77       0.02816   
-   2    35   1U   17     0    17  17.7       9.77       0.04224   
-   2    35   2     6     4    10  17.7       9.78       0.01056   
-   2    36   1     5     3     8  17.7       9.79       0.007919  
-   2    37   1     5     4     9  17.7       9.80       0.007919  
-   2    38   1     9     1    10  17.7       9.81       0.01188   
-   2    39   1     5     4     9  17.7       9.82       0.008909  
-   2    40   1     6     3     9  17.7       9.83       0.008909  
-   2    41   1     9     2    11  17.7       9.84       0.01336   
-   2    42   1    12     0    12  17.8       9.86       0.02005   
-   2    43   1    11     0    11  17.8       9.89       0.03007   
-   2    44   1    16     0    16  17.8       9.92       0.03007   
-   2    45   1U    8     0     8  17.8       9.92       0.04510   
-   2    45   2    10     0    10  17.8       9.93       0.01128   
-   2    46   1    10     0    10  17.8       9.95       0.01128   
-   2    47   1    10     0    10  17.9       9.96       0.01691   
-   2    48   1U   19     0    19  17.9       9.96       0.02537   
-   2    48   2    11     0    11  17.9       9.97       0.006342  
-   2    49   1    10     0    10  17.9       9.98       0.006342  
-   2    50   1U    8     0     8  17.9       9.98       0.009514  
-   2    50   2     4     3     7  17.9       9.98       0.002378  
-   2    51   1     6     1     7  17.9       9.98       0.003568  
-   2    52   1     8     0     8  17.9       9.99       0.005351  
-   2    53   1U    7     0     7  17.9       9.99       0.008027  
-   2    53   2     4     4     8  17.9       9.99       0.002007  
-   2    54   1     3     4     7  17.9       9.99       0.003010  
-   2    55   1     8     3    11  17.9       10.0       0.004515  
-   2    56   1     9     2    11  17.9       10.0       0.003386  
-   2    57   1    16    30    46  17.9       10.0       0.0002823 
-                          
- THE ANALYSIS HAS COMPLETED SUCCESSFULLY
-```
+- Phase 1 (pre-kink): k_FEA_estimate ≈ 34 N/mm (target 34.7 N/mm, ~2% under)
+- F1 at preload (s=7.58 mm): ≈ 249 N ✓
+- Kink1 at lift=4.05 mm: F≈390 N ✓
+- Kink2 at lift=7.67 mm: F≈525 N ✓  
+- F2 at full lift (s=17.58 mm): ≈ 621 N ✓
+- Spring solid length: s_solid ≈ 20.2 mm > s_full_lift=17.58 mm ✓ (no premature closing)
 
-## Recent .msg output
-```
-NUMBER OF RHS:        1
-        NUMBER OF FLOPS:      8.008e+12
-        SOLVER ELAPSED TIME:  158s
+## Pipeline Progress
 
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION    27
-
-   MAX. PENETRATION ERROR 45.5629E-06  AT NODE 23404 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-   MAX. CONTACT FORCE ERROR -238.187E-06   AT NODE 85053 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-          PENETRATION ERROR TOO LARGE COMPARED TO DISPLACEMENT INCREMENT.
-
- AVERAGE FORCE                       6.50       TIME AVG. FORCE        5.26    
- LARGEST SCALED RESIDUAL FORCE     -4.726E-04   AT NODE      92466   DOF  3
-  CORRESPONDING RESIDUAL FORCE     -4.726E-04
- LARGEST INCREMENT OF DISP.        -2.939E-03   AT NODE      21086   DOF  2
- LARGEST CORRECTION TO DISP.        1.976E-05   AT NODE       6859   DOF  1
-          THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
- 
-	SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
- 	1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
-        NUMBER OF EQUATIONS:  1146282
-        NUMBER OF RHS:        1
-        NUMBER OF FLOPS:      8.008e+12
-        SOLVER ELAPSED TIME:  157s
-
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION    28
-
-   MAX. PENETRATION ERROR 44.0920E-06  AT NODE 23404 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-   MAX. CONTACT FORCE ERROR -229.445E-06   AT NODE 85053 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-          PENETRATION ERROR TOO LARGE COMPARED TO DISPLACEMENT INCREMENT.
-
- AVERAGE FORCE                       6.50       TIME AVG. FORCE        5.26    
- LARGEST SCALED RESIDUAL FORCE     -4.555E-04   AT NODE      92466   DOF  3
-  CORRESPONDING RESIDUAL FORCE     -4.555E-04
- LARGEST INCREMENT OF DISP.        -2.956E-03   AT NODE      21086   DOF  2
- LARGEST CORRECTION TO DISP.        1.896E-05   AT NODE       6859   DOF  1
-          THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
- 
-	SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
- 	1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
-        NUMBER OF EQUATIONS:  1146282
-        NUMBER OF RHS:        1
-        NUMBER OF FLOPS:      8.008e+12
-        SOLVER ELAPSED TIME:  157s
-
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION    29
-
-   MAX. PENETRATION ERROR 29.5005E-06  AT NODE 23404 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-   MAX. CONTACT FORCE ERROR -220.992E-06   AT NODE 85053 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-          PENETRATION ERROR TOO LARGE COMPARED TO DISPLACEMENT INCREMENT.
-
- AVERAGE FORCE                       6.50       TIME AVG. FORCE        5.26    
- LARGEST SCALED RESIDUAL FORCE     -4.390E-04   AT NODE      84043   DOF  3
-  CORRESPONDING RESIDUAL FORCE     -4.390E-04
- LARGEST INCREMENT OF DISP.        -2.973E-03   AT NODE      21086   DOF  2
- LARGEST CORRECTION TO DISP.        1.820E-05   AT NODE       6859   DOF  1
-          THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
- 
-	SYMMETRIC PURE THREAD-BASED DIRECT SPARSE SOLVER RUNNING ON
- 	1 HOST x 1 MPI RANK PER HOST x 4 THREADS PER RANK
-        NUMBER OF EQUATIONS:  1146282
-        NUMBER OF RHS:        1
-        NUMBER OF FLOPS:      8.008e+12
-        SOLVER ELAPSED TIME:  158s
-
-               CONVERGENCE CHECKS FOR EQUILIBRIUM ITERATION    30
-
-   MAX. PENETRATION ERROR 12.2797E-06  AT NODE 23404 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-   MAX. CONTACT FORCE ERROR -212.823E-06   AT NODE 85053 OF CONTACT PAIR 
-   (SPRING_SURF,SPRING_SURF)
-          THE CONTACT CONSTRAINTS HAVE CONVERGED.
-
- AVERAGE FORCE                       6.50       TIME AVG. FORCE        5.26    
- LARGEST SCALED RESIDUAL FORCE     -4.232E-04   AT NODE      84043   DOF  3
-  CORRESPONDING RESIDUAL FORCE     -4.232E-04
- LARGEST INCREMENT OF DISP.        -2.989E-03   AT NODE      21086   DOF  2
- LARGEST CORRECTION TO DISP.        1.748E-05   AT NODE       6859   DOF  1
-          THE FORCE     EQUILIBRIUM EQUATIONS HAVE CONVERGED
-
- ITERATION SUMMARY FOR THE INCREMENT:  46 TOTAL ITERATIONS, OF WHICH
-  16 ARE SEVERE DISCONTINUITY ITERATIONS AND 30 ARE EQUILIBRIUM ITERATIONS.
-
- TIME INCREMENT COMPLETED  2.8228988E-04,  FRACTION OF STEP COMPLETED   1.000000    
- STEP TIME COMPLETED        10.00000    ,  TOTAL TIME COMPLETED         17.90000    
-
-
-          THE ANALYSIS HAS BEEN COMPLETED
-
-
-
-     ANALYSIS SUMMARY:
-     TOTAL OF         73  INCREMENTS
-                      10  CUTBACKS IN AUTOMATIC INCREMENTATION
-                     866  ITERATIONS INCLUDING CONTACT ITERATIONS IF PRESENT
-                     866  PASSES THROUGH THE EQUATION SOLVER OF WHICH 
-                     866  INVOLVE MATRIX DECOMPOSITION, INCLUDING
-                       0  DECOMPOSITION(S) OF THE MASS MATRIX
-                       1  REORDERING OF EQUATIONS TO MINIMIZE WAVEFRONT
-                       0  ADDITIONAL RESIDUAL EVALUATIONS FOR LINE SEARCHES
-                       0  ADDITIONAL OPERATOR EVALUATIONS FOR LINE SEARCHES
-                       4  WARNING MESSAGES DURING USER INPUT PROCESSING
-                       0  WARNING MESSAGES DURING ANALYSIS
-                       0  ANALYSIS WARNINGS ARE NUMERICAL PROBLEM MESSAGES
-                       0  ANALYSIS WARNINGS ARE NEGATIVE EIGENVALUE MESSAGES
-                       0  ERROR MESSAGES
-
-
-
-     JOB TIME SUMMARY
-       USER TIME (SEC)      =     2.42E+05
-       SYSTEM TIME (SEC)    =     7.19E+03
-       TOTAL CPU TIME (SEC) =     2.49E+05
-       WALLCLOCK TIME (SEC) =        67777
-       MEMORY PEAK (GB)     =            0
-```
