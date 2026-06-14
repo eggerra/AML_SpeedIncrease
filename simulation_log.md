@@ -39,3 +39,35 @@
 - Pattern matches previous long-stall at inc 175+: solver working through
   a very difficult contact increment at near-full compression
 - 0.10 mm remaining; expect completion once this increment converges or cuts back
+
+## 2026-06-14 19:51:02  --  COMPLETED (9.90/10 mm) -- results NOT usable: force blowup at lift~5.9 mm
+
+**Status:** DONE -- pipeline completed; results require fix before they are usable
+
+### What happened
+- run_abaqus.py post-processing finished; 39 data points extracted from ODB
+- Step 1 (5 frames, period=7.6 mm), Step 2 (36 frames, period=10.0 mm, reached 9.90 mm)
+- Simulation ran ~3.9 h (15:33 -> 19:18 on 2026-06-14)
+
+### Force-displacement result (ValveSpring_oval_contact_abaqus_rf.txt)
+| s [mm] | F [N]  | note                          |
+|--------|--------|-------------------------------|
+|  7.60  |  276.4 | preload -- expected 249 N (+11%) |
+| 11.63  |  481.4 | kink1   -- expected ~390 N (+23%) |
+| 12.95  |  624.5 | reasonable for Phase 3        |
+| 13.47  |  733.4 | rising steeply (expected ~500 N) |
+| 14.06  | 4539   | BLOWUP -- spring near-solid   |
+| 14.24  | 9377   | peak force                    |
+| 17.49  | 6942   | sustained high (run endpoint) |
+
+### Root cause: c0=0.01 mm exponential contact too stiff
+- Changed from c0=0.1 mm to c0=0.01 mm to reduce 45 um penetration
+- At 0.1 mm overclosure: p = 0.1*exp(0.1/0.01) = 2202 N/mm2 (extreme)
+- When multiple coils near-contact simultaneously at s~13-14 mm, total
+  contact force overwhelms spring compliance -> non-physical blowup
+- Spring going near-solid at lift~5.9 mm (expected kink1 zone, NOT solid)
+
+### Fix required
+- Revert contact to EXPONENTIAL c0=0.1 mm (original value) in spring_analysis.py
+- The 45 um penetration with c0=0.1 mm was cosmetic (p~0.16 N/mm2 at 45 um = negligible)
+- Also investigate +11-23% force offset (likely E_MOD or geometry calibration)
