@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Run started:** 2026-06-15 00:56:16
+**Run started:** 2026-06-15 01:05:15
 **Job:** ValveSpring_oval_contact_abaqus
 
 ## Change applied
@@ -11,28 +11,16 @@
 
 ## Progress
 
-## 2026-06-15 00:56:16  —  CAD generation
+## 2026-06-15 01:05:15  —  CAD generation
 **Status:** RUNNING
 
-## 2026-06-15 00:56:31  —  CAD generation
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval.step (2973 kB)
+## 2026-06-15 01:05:24  --  Pipeline COMPLETE (run_full_pipeline.py exited)
 
-## 2026-06-15 00:56:31  —  Meshing
-**Status:** RUNNING — maxh=1.0 mm, Netgen (may take 5-15 min)
+**Status:** DONE -- full pipeline finished; results confirm force blowup (same as documented)
 
-## 2026-06-15 00:56:39  —  Meshing
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_mesh.inp (4 MB)
-
-## 2026-06-15 00:56:39  —  FEA input
-**Status:** RUNNING — writing Abaqus/CalculiX INP
-
-## 2026-06-15 01:01:36  —  Abaqus solve
-**Status:** COMPLETED — 39 result points  F=87–9377 N  wall=9.5h
-
-## Summary
-- Total wall time: 9.5h (Abaqus only)
-- Plot: D:\Projects_AI\AML_SpeedIncrease\spring_FvL_abaqus.png
-- RF data: D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact_abaqus_rf.txt
-
-## 2026-06-15 01:04:46  --  Pipeline idle; no change since 2026-06-14 19:21 (3 min / 0.1h)
-**Status:** IDLE -- pending contact fix (c0=0.1 mm) and rerun
+- run_full_pipeline.py completed: CAD(14s) + mesh(158s) + INP(515s) + Abaqus(34140s=9.5h)
+- Abaqus result: 39 points, compression 2.50-17.49 mm, F=87-9377 N
+- .sta confirms: Step 2 reached inc 178, lift=9.90/10 mm
+- Force blowup at lift~5.9 mm (s~13.5 mm) unchanged -- contact c0=0.01 mm issue
+- Pipeline process (PID 1327) has now exited cleanly
+- Next action: fix contact c0=0.1 mm in spring_analysis.py, rerun
