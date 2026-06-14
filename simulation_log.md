@@ -167,3 +167,12 @@
 - SDI counts rising again: 7, 10, 11, 12, 17, 27 -- new coil contact events in Phase 3
 - Still converging in 1 attempt despite 27 SDIs at inc 125 -- solver handling well
 - 1.41 mm remaining to full lift (10 mm); ~8-15 more increments at current rate
+
+## 2026-06-14 17:44:54  --  Abaqus/Standard Step 2, Inc 133, lift=9.14 mm / 10 mm
+**Status:** RUNNING -- 91% complete, final approach to full lift
+
+- Step 2 (valve lift): inc 133, lift=9.14 mm of 10 mm (91%)
+- Inc 126: 29 SDIs, 0.264 mm step (large); inc 127: cutback (1U), recovered at 0.049 mm
+- Inc 128-133: stable recovery, step sizes 0.037-0.056 mm, SDIs 2-7 -- settling
+- Only 0.86 mm remaining to full lift (10 mm); ~15-23 more increments at current rate
+- No further issues expected; spring approaching full compression state
