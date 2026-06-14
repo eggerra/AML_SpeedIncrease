@@ -130,3 +130,12 @@
 - SDI counts low (2-5) and stable -- coil contact pattern settled
 - Equil iters 3-6 per increment -- healthy convergence
 - Kink2 at lift=7.67 mm is 0.53 mm ahead (~15-30 more increments)
+
+## 2026-06-14 17:04:51  --  Abaqus/Standard Step 2, Inc 104, lift=7.44 mm / 10 mm
+**Status:** RUNNING -- 74% complete, approaching kink2
+
+- Step 2 (valve lift): inc 104, lift=7.44 mm of 10 mm (74%)
+- Inc 100-103: step sizes ramping up (0.023->0.077 mm) as contact stabilises
+- Inc 104: 32 SDIs + 3 equil iters = 35 total (new contact event), still 1 attempt
+- Kink2 at lift=7.67 mm is only 0.23 mm ahead -- entering second major bind zone
+- High SDI count at inc 104 likely signals start of next coil group binding
