@@ -90,3 +90,11 @@
 - PID 1327 still listed (likely stuck on git push in final pipeline step -- harmless)
 - Simulation finished with unusable results (force blowup, documented 19:55 entry)
 - Next action: fix contact c0=0.1 mm, rerun pipeline
+
+## 2026-06-14 20:14:51  --  Pipeline idle; no change since 19:21
+
+**Status:** IDLE -- all files unchanged for 54+ min; awaiting contact fix + rerun
+
+- No new activity; PID 1327 still alive (hung on final git push -- harmless)
+- Simulation complete with unusable results (force blowup at lift~5.9 mm)
+- Next action: revert contact to EXPONENTIAL c0=0.1 mm in spring_analysis.py, rerun
