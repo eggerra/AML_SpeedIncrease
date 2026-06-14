@@ -119,3 +119,10 @@
 
 - Files unchanged 84+ min; no Abaqus or pipeline activity
 - Pending: revert EXPONENTIAL c0=0.1 mm, rerun full pipeline
+
+## 2026-06-14 20:54:50  --  Pipeline idle; no change since 19:21 (94 min)
+
+**Status:** IDLE -- no activity; contact fix pending
+
+- Files unchanged 94+ min
+- Pending: revert EXPONENTIAL c0=0.1 mm, rerun
