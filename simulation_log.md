@@ -204,3 +204,11 @@
 - Inc 147: 1U then converged on attempt 2 at 0.009 mm
 - Inc 148-152: stable at 0.010-0.021 mm, SDIs 5-11, all 1 attempt
 - 0.28 mm remaining at ~0.010-0.021 mm steps; ~13-28 increments to full lift (10 mm)
+
+## 2026-06-14 18:24:50  --  Abaqus/Standard Step 2, Inc 157, lift=9.81 mm / 10 mm
+**Status:** RUNNING -- 98% complete, 0.19 mm to full lift
+
+- Step 2 (valve lift): inc 157, lift=9.81 mm of 10 mm (98%)
+- Inc 153-157: all 1 attempt, no cutbacks; step sizes 0.011-0.027 mm
+- SDIs fluctuating (4, 12, 17, 8, 14) but all converging cleanly
+- 0.19 mm remaining; ~7-17 increments to completion at current step sizes
