@@ -71,3 +71,13 @@
 - Revert contact to EXPONENTIAL c0=0.1 mm (original value) in spring_analysis.py
 - The 45 um penetration with c0=0.1 mm was cosmetic (p~0.16 N/mm2 at 45 um = negligible)
 - Also investigate +11-23% force offset (likely E_MOD or geometry calibration)
+
+## 2026-06-14 19:55:14  --  Pipeline idle; no new activity since last update
+
+**Status:** IDLE -- run_full_pipeline.py process alive but no output for 34+ min
+
+- oval_pipeline.log: last entry 19:21 (run_abaqus.py post-processing complete)
+- .sta / .odb: last updated 19:18; no new Abaqus activity
+- PID 1327 still listed; likely waiting on git commit/push in final pipeline step
+- Simulation results already documented in previous entry (force blowup, fix required)
+- No action needed until contact model is fixed and pipeline is restarted
