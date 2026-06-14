@@ -98,3 +98,10 @@
 - No new activity; PID 1327 still alive (hung on final git push -- harmless)
 - Simulation complete with unusable results (force blowup at lift~5.9 mm)
 - Next action: revert contact to EXPONENTIAL c0=0.1 mm in spring_analysis.py, rerun
+
+## 2026-06-14 20:24:52  --  Pipeline idle; no change since 19:21 (64 min)
+
+**Status:** IDLE -- no new activity; pipeline done, contact fix pending
+
+- oval_pipeline.log and .sta both unchanged for 64+ min
+- No further action until contact model is fixed (c0=0.1 mm) and pipeline restarted
