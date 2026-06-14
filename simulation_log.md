@@ -82,3 +82,13 @@
 - Kink1 (lift=4.05 mm, first coil bind) passed cleanly at inc ~42
 - Inc size stable at 0.03955 mm; all increments 1 attempt, 1-2 SDIs, 4-6 iters
 - Next milestone: kink2 at lift=7.67 mm (rate change 36.5->40.9 N/mm)
+
+## 2026-06-14 16:14:53  --  Abaqus/Standard Step 2, Inc 70, lift=5.87 mm / 10 mm
+**Status:** RUNNING -- 59% of valve lift complete
+
+- Step 2 (valve lift): inc 70, lift=5.87 mm of 10 mm (59%)
+- Inc 61-66: inc size ramped up from 0.040 to 0.300 mm (solver gaining confidence)
+- Inc 67: two unconverged attempts (4U, 4U) then converged on attempt 3 at 0.028 mm
+  (contact event -- likely second group of coils beginning to bind)
+- Inc 68-70: recovered, inc size growing again (0.042 -> 0.095 mm)
+- Next milestone: kink2 at lift=7.67 mm (~1.8 mm ahead)
