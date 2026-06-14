@@ -54,3 +54,14 @@
   - CONTACT CONTROLS STABILIZE=0.001 handling c0=0.01 mm without issues
   - Inc size = 0.5 mm (no reductions needed so far)
 - Step 2 (10 mm valve lift) will start after ~5 more increments
+
+## 2026-06-14 15:45:33  --  Abaqus/Standard Step 2 (valve lift), Inc 18, lift=3.28 mm
+**Status:** RUNNING -- Step 2 (valve lift 0->10 mm), 3.28/10 mm complete (33%)
+
+- Step 1 (preload): DONE
+- Step 2 progress (ValveSpring_oval_contact_abaqus.sta, last line):
+  - Inc 18, attempt 1U (unconverged cutback in progress), lift=3.28 mm
+  - Inc sizes have dropped from 0.5 mm to 0.04-0.11 mm as coil contact increases
+  - Incs 16-17: 3 severe discontinuity iterations (coil binding events)
+  - Inc 18: 5 SDIs, 1U -- Abaqus cutting back; still converging
+- ~67% of lift remaining (6.72 mm); expect further cutbacks near coil bind zone
