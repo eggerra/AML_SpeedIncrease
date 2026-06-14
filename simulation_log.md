@@ -112,3 +112,10 @@
 
 - All files unchanged for 74+ min; pipeline complete
 - Pending fix: revert EXPONENTIAL c0=0.1 mm in spring_analysis.py, rerun
+
+## 2026-06-14 20:44:56  --  Pipeline idle; no change since 19:21 (84 min)
+
+**Status:** IDLE -- pipeline done; contact fix pending before next run
+
+- Files unchanged 84+ min; no Abaqus or pipeline activity
+- Pending: revert EXPONENTIAL c0=0.1 mm, rerun full pipeline
