@@ -102,3 +102,13 @@
 - Inc 74: converged but 7 SDIs + 7 equil iters (14 total) -- coils actively binding
 - Inc 75: 1U, 16 SDIs -- cutback in progress; solver working through contact zone
 - Approaching kink2 region (lift=7.67 mm, ~1.24 mm ahead); expect continued cutbacks
+
+## 2026-06-14 16:34:55  --  Abaqus/Standard Step 2, Inc 79, lift=6.60 mm / 10 mm
+**Status:** RUNNING -- 66% complete, stepping carefully through bind zone
+
+- Step 2 (valve lift): inc 79, lift=6.60 mm of 10 mm (66%)
+- Inc 75 recovered (attempt 2 at 0.030 mm step after 16-SDI cutback)
+- Inc 76-78: stable at 0.030 mm, 5-9 SDIs per increment (coils continuously binding)
+- Inc 79: 35 SDIs + 9 equil iters = 44 total -- heaviest increment yet, but converged
+- Step size holding at ~0.030-0.045 mm; solver in deepest contact zone
+- Kink2 at lift=7.67 mm is 1.07 mm ahead (~24-35 more increments at current step size)
