@@ -37,3 +37,20 @@
   - CalculiX expected to diverge again at ~inc 7 (c0=0.01 mm exponential),
     but will now exit cleanly (fix applied) and pipeline will continue to Abaqus
 - Abaqus: NOT yet started (.sta shows old run only; new job pending)
+
+## 2026-06-14 15:32:36  —  FEA input
+**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact.inp (177 kB)
+
+## 2026-06-14 15:32:36  —  Abaqus solve
+**Status:** RUNNING — this typically takes 10-20 hours
+
+## 2026-06-14 15:35:15  --  Abaqus/Standard Step 1 (preload), Inc 10/~15
+**Status:** RUNNING -- Abaqus started 15:33 on 2026-06-14, new geometry (n_closed=1.25)
+
+- CalculiX: diverged at inc 7 as expected, exited cleanly (fix confirmed working)
+- Abaqus: RUNNING -- ValveSpring_oval_contact_abaqus.sta shows:
+  - Step 1 (preload 0->7.58 mm), inc 10 done, s=5.00 mm (66% of preload)
+  - All increments converging in 1 attempt, 1-6 iters (excellent stability)
+  - CONTACT CONTROLS STABILIZE=0.001 handling c0=0.01 mm without issues
+  - Inc size = 0.5 mm (no reductions needed so far)
+- Step 2 (10 mm valve lift) will start after ~5 more increments
