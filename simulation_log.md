@@ -92,3 +92,13 @@
   (contact event -- likely second group of coils beginning to bind)
 - Inc 68-70: recovered, inc size growing again (0.042 -> 0.095 mm)
 - Next milestone: kink2 at lift=7.67 mm (~1.8 mm ahead)
+
+## 2026-06-14 16:24:52  --  Abaqus/Standard Step 2, Inc 75, lift~6.43 mm / 10 mm
+**Status:** RUNNING -- 64% complete, active contact zone, cutbacks in progress
+
+- Step 2 (valve lift): inc 75 in progress (last converged: inc 74 at lift=6.43 mm, 64%)
+- Inc 71-72: smooth ramp-up to 0.21 mm steps
+- Inc 73: 1U (32 SDIs -- heavy contact event), recovered on attempt 2 at 0.080 mm
+- Inc 74: converged but 7 SDIs + 7 equil iters (14 total) -- coils actively binding
+- Inc 75: 1U, 16 SDIs -- cutback in progress; solver working through contact zone
+- Approaching kink2 region (lift=7.67 mm, ~1.24 mm ahead); expect continued cutbacks
