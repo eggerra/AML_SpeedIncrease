@@ -239,3 +239,15 @@
 - Only advanced 0.01 mm since last update (10 increments) -- very fine stepping
 - 0.11 mm remaining; at 0.002-0.003 mm steps ~37-55 more increments to finish
 - Convergence healthy; solver locked into tiny steps due to dense coil contact
+
+## 2026-06-14 19:05:47  --  Abaqus/Standard Step 2, Inc 175+, lift~9.89 mm / 10 mm
+**Status:** RUNNING -- .sta stalled 14 min; solver actively iterating on next increment
+
+- Last .sta entry: inc 175, lift=9.89 mm (99%), step size 0.003 mm (18:50)
+- .msg confirms Abaqus RUNNING: working on eq. iteration 12 of next increment
+  - 149,091 equations, 4 threads, 5.6s per matrix factorisation
+  - Scaled residual force: 0.162 (target ~0.005) -- not yet converged
+  - Max contact penetration: 40 um -- normal, within tolerance
+  - Contact constraints: CONVERGED; force equilibrium still iterating
+- Solver not stuck; dense contact at near-full lift requires many iterations
+- 0.11 mm remaining to full lift (10 mm)
