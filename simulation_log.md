@@ -139,3 +139,13 @@
 - Inc 104: 32 SDIs + 3 equil iters = 35 total (new contact event), still 1 attempt
 - Kink2 at lift=7.67 mm is only 0.23 mm ahead -- entering second major bind zone
 - High SDI count at inc 104 likely signals start of next coil group binding
+
+## 2026-06-14 17:14:53  --  Abaqus/Standard Step 2, Inc 109, lift~7.77 mm / 10 mm
+**Status:** RUNNING -- 78% complete, past kink2, cutback in progress
+
+- Step 2 (valve lift): last converged inc 108 at lift=7.77 mm (78%); inc 109 cutting back
+- Kink2 (lift=7.67 mm) crossed between inc 106 and 107
+- Inc 104-108 progression through kink2 zone (SDIs: 32, 29, 23, 14, 15 -- decreasing)
+- Inc 107: lift=7.70 mm (just past kink2=7.67 mm); rate now 40.9 N/mm
+- Inc 109: 1U, 7 SDIs -- Abaqus cutting back; still 2.23 mm of lift remaining
+- Phase 3 (highest stiffness) now active; remaining lift to full stroke is 2.23 mm
