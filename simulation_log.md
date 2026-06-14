@@ -126,3 +126,10 @@
 
 - Files unchanged 94+ min
 - Pending: revert EXPONENTIAL c0=0.1 mm, rerun
+
+## 2026-06-14 21:04:49  --  Pipeline idle; no change since 19:21 (104 min)
+
+**Status:** IDLE -- no activity; contact fix pending
+
+- Files unchanged 104+ min
+- Pending: revert EXPONENTIAL c0=0.1 mm, rerun
