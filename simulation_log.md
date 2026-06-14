@@ -158,3 +158,12 @@
 - Step sizes recovering: 0.012 -> 0.070 mm as Phase 3 contact stabilises
 - SDI counts low and stable (3-10 per inc); equil iters 0-5 -- healthy convergence
 - 1.89 mm remaining to full lift (10 mm); no further cutbacks since inc 109
+
+## 2026-06-14 17:34:53  --  Abaqus/Standard Step 2, Inc 125, lift=8.59 mm / 10 mm
+**Status:** RUNNING -- 86% complete, accelerating toward full lift
+
+- Step 2 (valve lift): inc 125, lift=8.59 mm of 10 mm (86%)
+- Inc 120-125: all 1 attempt, no cutbacks; step sizes growing (0.052->0.176 mm)
+- SDI counts rising again: 7, 10, 11, 12, 17, 27 -- new coil contact events in Phase 3
+- Still converging in 1 attempt despite 27 SDIs at inc 125 -- solver handling well
+- 1.41 mm remaining to full lift (10 mm); ~8-15 more increments at current rate
