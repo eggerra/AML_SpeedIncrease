@@ -149,3 +149,12 @@
 - Inc 107: lift=7.70 mm (just past kink2=7.67 mm); rate now 40.9 N/mm
 - Inc 109: 1U, 7 SDIs -- Abaqus cutting back; still 2.23 mm of lift remaining
 - Phase 3 (highest stiffness) now active; remaining lift to full stroke is 2.23 mm
+
+## 2026-06-14 17:24:51  --  Abaqus/Standard Step 2, Inc 120, lift=8.11 mm / 10 mm
+**Status:** RUNNING -- 81% complete, Phase 3 proceeding smoothly
+
+- Step 2 (valve lift): inc 120, lift=8.11 mm of 10 mm (81%)
+- Inc 109 cutback recovered (attempt 2 at 0.012 mm); inc 110-120 all clean 1 attempt
+- Step sizes recovering: 0.012 -> 0.070 mm as Phase 3 contact stabilises
+- SDI counts low and stable (3-10 per inc); equil iters 0-5 -- healthy convergence
+- 1.89 mm remaining to full lift (10 mm); no further cutbacks since inc 109
