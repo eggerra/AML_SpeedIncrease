@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Run started:** 2026-06-14 15:02:38
+**Run started:** 2026-06-14 15:21:09
 **Job:** ValveSpring_oval_contact_abaqus
 
 ## Fix applied
@@ -12,29 +12,28 @@
 
 ## Progress
 
-## 2026-06-14 15:02:38  —  CAD generation
+## 2026-06-14 15:21:09  —  CAD generation
 **Status:** RUNNING
 
-## 2026-06-14 15:02:50  —  CAD generation
+## 2026-06-14 15:21:23  —  CAD generation
 **Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval.step (2897 kB)
 
-## 2026-06-14 15:02:50  —  Meshing
+## 2026-06-14 15:21:23  —  Meshing
 **Status:** RUNNING — LMAX=1.0 mm, Netgen (may take 5-15 min)
 
-## 2026-06-14 15:05:28  —  Meshing
+## 2026-06-14 15:24:01  —  Meshing
 **Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_mesh.inp (4 MB)
 
-## 2026-06-14 15:05:28  —  FEA input
+## 2026-06-14 15:24:01  —  FEA input
 **Status:** RUNNING — writing Abaqus/CalculiX INP
 
-## 2026-06-14 15:20:43  --  CalculiX diverged (Step 1 Inc 7)
-**Status:** FAILED (CalculiX) / RESTARTING
+## 2026-06-14 15:25:18  --  CalculiX Step 1 (preload), Inc 2/~15
+**Status:** RUNNING -- pipeline restarted at 15:21; CalculiX on Inc 2 of ~15 (s~0.5-1.0 mm of 7.58 mm preload)
 
-- CalculiX diverged at increment 7 of 15 (s=3.5mm of 7.58mm preload)
-- Root cause: c0=0.01mm exponential contact too stiff for CalculiX;
-  59K contact spring elements activated suddenly, residual reached ~1.5e21 N
-- The CalculiX INP file (ValveSpring_oval_contact.inp) was written successfully
-- Fix applied: spring_analysis.py now exits cleanly on CalculiX failure
-  (Abaqus is the actual solver; CalculiX result not needed)
-- Old Abaqus run (wrong geometry, n_closed=2.026) completed at 00:05 on 2026-06-14
-- Pipeline restarted: new geometry will now proceed to Abaqus solve
+- CAD: done (15:21, 2897 kB)
+- Mesh: done (15:24, 4 MB, Netgen LMAX=1.0 mm)
+- FEA input stage: CalculiX running (oval_pipeline.log: 509 lines, inc 2)
+  - ~9000 contact spring elements per iteration (normal, stable)
+  - CalculiX expected to diverge again at ~inc 7 (c0=0.01 mm exponential),
+    but will now exit cleanly (fix applied) and pipeline will continue to Abaqus
+- Abaqus: NOT yet started (.sta shows old run only; new job pending)
