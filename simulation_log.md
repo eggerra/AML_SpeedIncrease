@@ -81,3 +81,12 @@
 - PID 1327 still listed; likely waiting on git commit/push in final pipeline step
 - Simulation results already documented in previous entry (force blowup, fix required)
 - No action needed until contact model is fixed and pipeline is restarted
+
+## 2026-06-14 20:04:53  --  Pipeline idle; no change since 19:21
+
+**Status:** IDLE -- no new activity; pipeline complete, awaiting contact fix + rerun
+
+- All files unchanged for 44+ min (oval_pipeline.log last 19:21, .sta last 19:18)
+- PID 1327 still listed (likely stuck on git push in final pipeline step -- harmless)
+- Simulation finished with unusable results (force blowup, documented 19:55 entry)
+- Next action: fix contact c0=0.1 mm, rerun pipeline
