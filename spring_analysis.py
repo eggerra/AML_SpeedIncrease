@@ -380,7 +380,12 @@ print("  Running... (may take several minutes)")
 
 proc = subprocess.run([ccx, JOB], cwd=BASE, timeout=28800)   # 8 h ceiling
 if proc.returncode != 0:
-    sys.exit(f"CalculiX exited with code {proc.returncode}")
+    # CalculiX failed, but the INP file was already written successfully above.
+    # Abaqus (run_abaqus.py) uses the INP as its input — CalculiX results are not
+    # required.  Exit cleanly so the pipeline can continue to run_abaqus.py.
+    print(f"WARNING: CalculiX exited with code {proc.returncode}")
+    print("  INP was written. Continuing to Abaqus solve.")
+    sys.exit(0)
 print("  Done.")
 
 # =============================================================================
