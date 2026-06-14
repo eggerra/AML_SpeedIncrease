@@ -251,3 +251,14 @@
   - Contact constraints: CONVERGED; force equilibrium still iterating
 - Solver not stuck; dense contact at near-full lift requires many iterations
 - 0.11 mm remaining to full lift (10 mm)
+
+## 2026-06-14 19:15:16  --  Abaqus/Standard Step 2, Inc 177, lift=9.89 mm / 10 mm
+**Status:** RUNNING -- 2 new increments since last update; working on inc 178
+
+- Step 2: inc 177 last completed (9.89 mm lift, 99%); inc 178 iterating now
+- Inc 176: 33 SDIs + 12 equil iters = 45 total (hardest since inc 105); converged 1 attempt
+- Inc 177: 9 SDIs + 10 equil iters = 19 total; step size 0.0045 mm, converged
+- .msg (live): inc 178 iterating -- penetration error 12.9 um, scaled residual -1.94
+  (not yet converged; contact force error TOO LARGE warning -- normal near full bind)
+- Solver active: 4 threads, 6.2s/factorisation, 149k equations
+- ~0.11 mm still remaining at ~0.0045 mm steps; ~24 more increments estimated
