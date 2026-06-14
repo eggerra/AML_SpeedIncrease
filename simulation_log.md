@@ -29,3 +29,13 @@
 - .msg: inc 179 iterating, force equilibrium not yet achieved (normal mid-iteration)
 - Solver: 4 threads, 5.6s/factorisation, 149k equations -- running well
 - 0.10 mm remaining; ~20-33 increments to full lift at current step size
+
+## 2026-06-14 19:35:07  --  Abaqus/Standard Step 2, Inc 178, lift=9.90 mm / 10 mm
+**Status:** RUNNING -- .sta stalled 17 min; solver grinding on inc 179
+
+- Last .sta: inc 178, lift=9.90 mm (99%), step size 0.0034 mm (stalled 17 min)
+- .msg stalled 14 min (force equilibrium not achieved, still iterating)
+- run_full_pipeline.py process (PID 1327) still alive -- Abaqus running
+- Pattern matches previous long-stall at inc 175+: solver working through
+  a very difficult contact increment at near-full compression
+- 0.10 mm remaining; expect completion once this increment converges or cuts back
