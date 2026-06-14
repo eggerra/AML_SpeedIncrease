@@ -195,3 +195,12 @@
   -- hardest convergence event since inc 67; likely final coil group seating
 - Inc 142-143: recovered at 0.005-0.007 mm, 1-2 SDIs, 4 equil iters -- stable
 - Only 0.42 mm remaining; step size now very small -- ~55-85 more increments to finish
+
+## 2026-06-14 18:14:53  --  Abaqus/Standard Step 2, Inc 152, lift=9.72 mm / 10 mm
+**Status:** RUNNING -- 97% complete, final 0.28 mm
+
+- Step 2 (valve lift): inc 152, lift=9.72 mm of 10 mm (97%)
+- Inc 143-146: step sizes recovering (0.007->0.025 mm); inc 147: another cutback
+- Inc 147: 1U then converged on attempt 2 at 0.009 mm
+- Inc 148-152: stable at 0.010-0.021 mm, SDIs 5-11, all 1 attempt
+- 0.28 mm remaining at ~0.010-0.021 mm steps; ~13-28 increments to full lift (10 mm)
