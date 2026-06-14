@@ -185,3 +185,13 @@
 - SDI counts rising again (6, 13, 18, 16, 19) -- last coil contacts engaging near full lift
 - All converging cleanly; equil iters 1-4 per increment
 - Only 0.62 mm remaining to full lift (10 mm); ~10-15 more increments to completion
+
+## 2026-06-14 18:04:53  --  Abaqus/Standard Step 2, Inc 143, lift=9.58 mm / 10 mm
+**Status:** RUNNING -- 96% complete, two-cutback event at inc 141, now recovered
+
+- Step 2 (valve lift): inc 143, lift=9.58 mm of 10 mm (96%)
+- Inc 139-140: clean, step sizes growing (0.070->0.106 mm), SDIs 25-26
+- Inc 141: two unconverged attempts (1U, 2U) before converging on attempt 3 at 0.005 mm
+  -- hardest convergence event since inc 67; likely final coil group seating
+- Inc 142-143: recovered at 0.005-0.007 mm, 1-2 SDIs, 4 equil iters -- stable
+- Only 0.42 mm remaining; step size now very small -- ~55-85 more increments to finish
