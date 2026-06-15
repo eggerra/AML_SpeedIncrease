@@ -26,8 +26,14 @@ Usage
 """
 import os, sys, subprocess, time, datetime
 
-BASE    = r"D:\Projects_AI\AML_SpeedIncrease"
-FREECAD = r"C:\Users\eggerra\AppData\Local\Programs\FreeCAD 1.1\bin\FreeCADCmd.exe"
+# --skip-mesh : skip CAD generation and Netgen meshing; reuse existing
+#               ValveSpring_oval_contact.inp (CalculiX INP) on disk.
+#               Use when the geometry is unchanged and meshing would be wasted.
+SKIP_MESH = "--skip-mesh" in sys.argv
+
+BASE       = r"D:\Projects_AI\AML_SpeedIncrease"
+FREECAD    = r"C:\Users\eggerra\AppData\Local\Programs\FreeCAD 1.1\bin\FreeCADCmd.exe"
+FREECADPY  = r"C:\Users\eggerra\AppData\Local\Programs\FreeCAD 1.1\bin\python.exe"
 
 OVAL_STEP  = os.path.join(BASE, "ValveSpring_oval.step")
 OVAL_MESH  = os.path.join(BASE, "ValveSpring_oval_mesh.inp")
@@ -67,6 +73,106 @@ def update_log(stage, status, extra=""):
     print(f"  [simulation_log] {stage}: {status}")
 
 
+def read_sta_summary(sta_file):
+    """Return a one-line summary of the latest .sta increment, or a status string."""
+    if not os.path.isfile(sta_file):
+        return "no .sta file yet"
+    try:
+        with open(sta_file) as f:
+            lines = f.readlines()
+        for line in reversed(lines):
+            parts = line.split()
+            if len(parts) >= 6:
+                try:
+                    step = int(parts[0])
+                    inc  = int(parts[1])
+                    total_time = float(parts[4])
+                    step_time  = float(parts[5])
+                    return (
+                        f"Step {step} Inc {inc}  "
+                        f"total={total_time:.2f} s  step={step_time:.2f} mm"
+                    )
+                except (ValueError, IndexError):
+                    pass
+    except Exception as exc:
+        return f"cannot read .sta: {exc}"
+    return "no increment data yet"
+
+
+def update_readme_results(rf_txt):
+    """Replace the 'Results pending' placeholder in README.md with real Abaqus results."""
+    if not os.path.isfile(rf_txt):
+        print("  [README.md] skipped — no RF file")
+        return
+    try:
+        data = []
+        with open(rf_txt) as f:
+            for line in f:
+                if line.startswith("#") or not line.strip():
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    data.append((float(parts[0]), abs(float(parts[1]))))
+        if not data:
+            print("  [README.md] skipped — RF file empty")
+            return
+
+        def interp(s_target):
+            for i in range(len(data) - 1):
+                s0, f0 = data[i]
+                s1, f1 = data[i + 1]
+                if s0 <= s_target <= s1:
+                    t = (s_target - s0) / (s1 - s0)
+                    return f0 + t * (f1 - f0)
+            return data[-1][1] if data else None
+
+        S_PRE  = 14.965
+        S_K1   = S_PRE + 4.05   # 19.015 mm
+        S_K2   = S_PRE + 7.67   # 22.635 mm
+        S_FULL = 24.965
+
+        f_pre  = interp(S_PRE)
+        f_k1   = interp(S_K1)
+        f_k2   = interp(S_K2)
+        f_full = interp(S_FULL)
+
+        if None in (f_pre, f_k1, f_k2, f_full):
+            print("  [README.md] skipped — not enough result points to interpolate")
+            return
+
+        run_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        result_block = (
+            f"**Abaqus/Standard results ({run_date}, drawing L0=46.1 mm, "
+            f"Netgen LMAX=1.0, 16 threads):**\n\n"
+            f"| Quantity | Analytical (3-phase) | **FEA** | Measurement | FEA error |\n"
+            f"|----------|---------------------|---------|-------------|-----------|\n"
+            f"| F @ preload  (s={S_PRE} mm) | 249 N | **{f_pre:.0f} N** | 249 N "
+            f"| {(f_pre/249-1)*100:+.1f}% |\n"
+            f"| F @ kink1    (lift=4.05 mm) | 390 N | **{f_k1:.0f} N** | 390.7 N "
+            f"| {(f_k1/390.7-1)*100:+.1f}% |\n"
+            f"| F @ kink2    (lift=7.67 mm) | 522 N | **{f_k2:.0f} N** | 525.3 N "
+            f"| {(f_k2/525.3-1)*100:+.1f}% |\n"
+            f"| F @ full lift (s={S_FULL} mm) | 621 N | **{f_full:.0f} N** | 620.7 N "
+            f"| {(f_full/620.7-1)*100:+.1f}% |"
+        )
+
+        readme = os.path.join(BASE, "README.md")
+        with open(readme, encoding="utf-8") as f:
+            content = f.read()
+
+        placeholder = "_Results pending from current simulation run._"
+        if placeholder in content:
+            content = content.replace(placeholder, result_block)
+        else:
+            content += f"\n\n## Abaqus Results ({run_date})\n\n{result_block}\n"
+
+        with open(readme, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("  [README.md] updated with Abaqus results")
+    except Exception as exc:
+        print(f"  [README.md] update failed: {exc}")
+
+
 
 # =============================================================================
 # Initialise log for this run
@@ -84,73 +190,109 @@ with open(SIM_LOG, "w", encoding="utf-8") as f:
         f"## Progress\n"
     )
 
-# =============================================================================
-# 1. Generate oval STEP geometry
-# =============================================================================
-update_log("CAD generation", "RUNNING")
-run(
-    [FREECAD, os.path.join(BASE, "generate_spring.py")],
-    env={"SPRING_PROFILE": "oval"},
-    desc="Generate oval STEP (n_closed=1.25, L0=46.1, D_pitch=0.0629)",
-)
-if not os.path.isfile(OVAL_STEP):
-    update_log("CAD generation", "FAILED — STEP file not created")
-    sys.exit(f"ERROR: STEP not created: {OVAL_STEP}")
-sz = os.path.getsize(OVAL_STEP) // 1024
-update_log("CAD generation", f"DONE — {OVAL_STEP} ({sz} kB)")
+if SKIP_MESH:
+    # =========================================================================
+    # 1–3 SKIPPED: reuse existing ValveSpring_oval_contact.inp on disk.
+    # =========================================================================
+    if not os.path.isfile(OVAL_INP):
+        sys.exit(f"ERROR: --skip-mesh requested but {OVAL_INP} does not exist.")
+    sz = os.path.getsize(OVAL_INP) // 1024
+    update_log("CAD + Mesh + FEA input", f"SKIPPED — reusing {OVAL_INP} ({sz} kB)")
+    print(f"  [--skip-mesh] reusing {OVAL_INP} ({sz} kB)")
+else:
+    # =========================================================================
+    # 1. Generate oval STEP geometry
+    # =========================================================================
+    update_log("CAD generation", "RUNNING")
+    run(
+        [FREECAD, os.path.join(BASE, "generate_spring.py")],
+        env={"SPRING_PROFILE": "oval"},
+        desc="Generate oval STEP (n_closed=1.25, L0=46.1, D_pitch=0.0629)",
+    )
+    if not os.path.isfile(OVAL_STEP):
+        update_log("CAD generation", "FAILED — STEP file not created")
+        sys.exit(f"ERROR: STEP not created: {OVAL_STEP}")
+    sz = os.path.getsize(OVAL_STEP) // 1024
+    update_log("CAD generation", f"DONE — {OVAL_STEP} ({sz} kB)")
 
-# =============================================================================
-# 2. Mesh oval STEP
-# =============================================================================
-update_log("Meshing", "RUNNING — maxh=1.0 mm, Netgen (may take 5-15 min)")
-run(
-    [FREECAD, os.path.join(BASE, "mesh_netgen.py")],
-    env={
-        "SPRING_STEP":     OVAL_STEP,
-        "SPRING_MESH_OUT": OVAL_MESH,
-        "SPRING_MAXH":     "1.0",
-    },
-    desc="Mesh oval STEP (Netgen maxh=1.0 mm)",
-)
-if not os.path.isfile(OVAL_MESH):
-    update_log("Meshing", "FAILED — mesh file not created")
-    sys.exit(f"ERROR: mesh not created: {OVAL_MESH}")
-sz = os.path.getsize(OVAL_MESH) // (1024 * 1024)
-update_log("Meshing", f"DONE — {OVAL_MESH} ({sz} MB)")
+    # =========================================================================
+    # 2. Mesh oval STEP
+    # =========================================================================
+    update_log("Meshing", "RUNNING — maxh=1.0 mm, Netgen (may take 5-15 min)")
+    import json as _json
+    _cfg_file = os.path.join(BASE, "_mesh_config.json")
+    with open(_cfg_file, "w") as _f:
+        _json.dump({"SPRING_STEP": OVAL_STEP, "SPRING_MESH_OUT": OVAL_MESH, "SPRING_MAXH": "1.0"}, _f)
+    run(
+        [FREECAD, os.path.join(BASE, "mesh_netgen.py")],
+        desc="Mesh oval STEP (Netgen maxh=1.0 mm)",
+    )
+    if os.path.isfile(_cfg_file):
+        os.remove(_cfg_file)
+    if not os.path.isfile(OVAL_MESH):
+        update_log("Meshing", "FAILED — mesh file not created")
+        sys.exit(f"ERROR: mesh not created: {OVAL_MESH}")
+    sz = os.path.getsize(OVAL_MESH) // (1024 * 1024)
+    update_log("Meshing", f"DONE — {OVAL_MESH} ({sz} MB)")
 
-# =============================================================================
-# 3. Write FEA input file (spring_analysis.py)
-#    Also runs CalculiX if available; we need the .inp regardless.
-# =============================================================================
-update_log("FEA input", "RUNNING — writing Abaqus/CalculiX INP")
-run(
-    [sys.executable, os.path.join(BASE, "spring_analysis.py")],
-    env={
-        "SPRING_MESH_INP": OVAL_MESH,
-        "SPRING_JOB":      OVAL_JOB,
-        "SPRING_PLOT":     os.path.join(BASE, "spring_FvL_ccx.png"),
-        "SPRING_L0":       "46.565",   # oval L0: 38.8 + 2*1.25*3.106 (drawing L0=46.1)
-        "SPRING_WIRE_A":   "3.106",    # oval wire eff. axial extent (c=0.1)
-    },
-    desc="Write FEA INP (spring_analysis.py)",
-)
-if not os.path.isfile(OVAL_INP):
-    update_log("FEA input", "FAILED — INP not created")
-    sys.exit(f"ERROR: INP not created: {OVAL_INP}")
-sz = os.path.getsize(OVAL_INP) // 1024
-update_log("FEA input", f"DONE — {OVAL_INP} ({sz} kB)")
+    # =========================================================================
+    # 3. Write FEA input file (spring_analysis.py)
+    #    Also runs CalculiX if available; we need the .inp regardless.
+    # =========================================================================
+    update_log("FEA input", "RUNNING — writing Abaqus/CalculiX INP")
+    run(
+        [sys.executable, os.path.join(BASE, "spring_analysis.py")],
+        env={
+            "SPRING_MESH_INP": OVAL_MESH,
+            "SPRING_JOB":      OVAL_JOB,
+            "SPRING_PLOT":     os.path.join(BASE, "spring_FvL_ccx.png"),
+            "SPRING_L0":       "46.565",
+            "SPRING_WIRE_A":   "3.106",
+        },
+        desc="Write FEA INP (spring_analysis.py)",
+    )
+    if not os.path.isfile(OVAL_INP):
+        update_log("FEA input", "FAILED — INP not created")
+        sys.exit(f"ERROR: INP not created: {OVAL_INP}")
+    sz = os.path.getsize(OVAL_INP) // 1024
+    update_log("FEA input", f"DONE — {OVAL_INP} ({sz} kB)")
 
 # =============================================================================
 # 4. Run Abaqus/Standard solve
 #    run_abaqus.py converts INP to Abaqus format, runs solver, extracts RF, plots.
+#    A background monitor thread writes a status entry to simulation_log.md
+#    every 10 minutes while the solver is running.
 # =============================================================================
 update_log("Abaqus solve", "RUNNING — this typically takes 10-20 hours")
 t_abq_start = time.time()
-run(
+
+STA_FILE        = os.path.join(BASE, ABQ_JOB + ".sta")
+MONITOR_SECS    = 600   # 10 minutes
+POLL_SECS       = 30    # check process exit every 30 s
+
+print("\n--- Abaqus/Standard solve + postprocess (16 cpus) ---")
+proc = subprocess.Popen(
     [sys.executable, os.path.join(BASE, "run_abaqus.py"), "16"],
-    desc="Abaqus/Standard solve + postprocess (16 cpus)",
+    cwd=BASE, env={**os.environ},
 )
+
+last_monitor = time.time()
+while proc.poll() is None:
+    now = time.time()
+    if now - last_monitor >= MONITOR_SECS:
+        elapsed_h = (now - t_abq_start) / 3600
+        sta = read_sta_summary(STA_FILE)
+        update_log(
+            "Abaqus solve",
+            f"RUNNING — {elapsed_h:.1f} h elapsed — {sta}",
+        )
+        last_monitor = now
+    time.sleep(POLL_SECS)
+
 elapsed_abq = time.time() - t_abq_start
+if proc.returncode != 0:
+    update_log("Abaqus solve", f"FAILED — exit code {proc.returncode}  wall={elapsed_abq/3600:.1f}h")
+    sys.exit(f"ERROR: run_abaqus.py failed (code {proc.returncode})")
 
 if os.path.isfile(ABQ_RF):
     with open(ABQ_RF) as fh:
@@ -166,6 +308,11 @@ if os.path.isfile(ABQ_RF):
     )
 else:
     update_log("Abaqus solve", f"COMPLETED (no RF file found)  wall={elapsed_abq/3600:.1f}h")
+
+# =============================================================================
+# 5a. Update README.md with actual results
+# =============================================================================
+update_readme_results(ABQ_RF)
 
 # =============================================================================
 # 5. Final simulation log entry

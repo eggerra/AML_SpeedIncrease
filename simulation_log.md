@@ -1,6 +1,6 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Run started:** 2026-06-15 01:53:58
+**Run started:** 2026-06-15 09:16:18
 **Job:** ValveSpring_oval_contact_abaqus
 
 ## Change applied
@@ -11,14 +11,16 @@
 
 ## Progress
 
-## 2026-06-15 01:53:58  —  CAD generation
-**Status:** RUNNING
+## 2026-06-15 09:16:18  —  CAD + Mesh + FEA input
+**Status:** SKIPPED — reusing D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact.inp (177 kB)
 
-## 2026-06-15 01:54:01  —  CAD generation
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval.step (2973 kB)
+## 2026-06-15 09:16:18  —  Abaqus solve
+**Status:** RUNNING — this typically takes 10-20 hours
 
-## 2026-06-15 01:54:01  —  Meshing
-**Status:** RUNNING — maxh=1.0 mm, Netgen (may take 5-15 min)
+## 2026-06-15 09:16:48  —  Abaqus solve
+**Status:** COMPLETED — 39 result points  F=87–9377 N  wall=0.0h
 
-## 2026-06-15 01:54:46  --  Pipeline idle; complete since ~02:04 (53 min ago)
-**Status:** IDLE -- pending contact fix (c0=0.1 mm) and rerun
+## Summary
+- Total wall time: 0.0h (Abaqus only)
+- Plot: D:\Projects_AI\AML_SpeedIncrease\spring_FvL_abaqus.png
+- RF data: D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact_abaqus_rf.txt

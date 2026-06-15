@@ -177,7 +177,14 @@ Mesh: regenerated from new geometry (drawing L0=46.1 mm).
 | F @ kink1 (lift=4.05 mm) | 390 N | ~390 N | 390.7 N |
 | F @ full lift (s=24.965 mm) | 621 N | ~621 N | 620.7 N |
 
-_Results pending from current simulation run._
+**Abaqus/Standard results (2026-06-15, drawing L0=46.1 mm, Netgen LMAX=1.0, 16 threads):**
+
+| Quantity | Analytical (3-phase) | **FEA** | Measurement | FEA error |
+|----------|---------------------|---------|-------------|-----------|
+| F @ preload  (s=14.965 mm) | 249 N | **6517 N** | 249 N | +2517.2% |
+| F @ kink1    (lift=4.05 mm) | 390 N | **6942 N** | 390.7 N | +1676.8% |
+| F @ kink2    (lift=7.67 mm) | 522 N | **6942 N** | 525.3 N | +1221.5% |
+| F @ full lift (s=24.965 mm) | 621 N | **6942 N** | 620.7 N | +1018.4% |
 
 **Previous run (2026-06-12, wrong n\_closed=2.026):**
 
