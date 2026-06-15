@@ -169,7 +169,6 @@ for lift, f_fea in zip(fea_lift_op, fea_f_op):
 # ── Stress analysis constants ─────────────────────────────────────────────────
 # Torsional stress for oval wire spring (DIN EN 13906-3):
 #   tau = k_w * 8*F*D_m / (pi * d_a * d_r^2)
-# where d_a = axial wire dim, d_r = radial wire dim
 # Spring index C = D_m / d_r;  k_w = Wahl correction = (4C-1)/(4C-4) + 0.615/C
 
 def spring_index(D_m):
@@ -197,15 +196,82 @@ tau2_top = tau_corrected(F_FULL_LIFT_FEA, D_m_top)
 
 tau_a_bot = (tau2_bot - tau1_bot) / 2.0
 tau_m_bot = (tau2_bot + tau1_bot) / 2.0
-tau_W_bot = tau_W0 / (1.0 + k_haigh * tau_m_bot / tau_W0)
-S_HCF_bot = tau_W_bot / tau_a_bot
-S_stat_bot = tau_rel / tau2_bot
-
 tau_a_top = (tau2_top - tau1_top) / 2.0
 tau_m_top = (tau2_top + tau1_top) / 2.0
-tau_W_top = tau_W0 / (1.0 + k_haigh * tau_m_top / tau_W0)
-S_HCF_top = tau_W_top / tau_a_top
-S_stat_top = tau_rel / tau2_top
+
+# ── Multi-material database (valve spring wire, shot-peened) ──────────────────
+# Sources: DIN EN 10270-3, Bekaert/Garphyttan OTEVA datasheets,
+#          Metallic Materials Handbook, motorsport engineering literature.
+# For d ≈ 3 mm wire.  τ_W0 = fully reversed shear fatigue limit (R=-1, shot-peened).
+# Haigh formulation used: τ_W_allow = τ_W0 / (1 + k_H * τ_m / τ_W0)
+MATERIALS = {
+    "VD SiCrNi SC\n(current)": {
+        "R_m":      2050.0,    # MPa  tensile strength
+        "E_GPa":    206.0,     # GPa
+        "rho":      7.85,      # g/cm³
+        "tau_ult":  0.65*2050, # MPa  torsional fracture (= 0.65·R_m)
+        "tau_rel":  0.56*2050, # MPa  set/relaxation limit
+        "tau_W0":   0.31*2050, # MPa  shear fatigue limit R=-1 shot-peened
+        "k_H":      0.20,      # Haigh slope
+        "color":    "#2c7bb6",
+        "note":     "DIN EN 10270-3 grade VD  |  standard high-perf valve spring",
+    },
+    "OTEVA 90 SC\n(Bekaert)": {
+        "R_m":      2100.0,
+        "E_GPa":    207.0,
+        "rho":      7.85,
+        "tau_ult":  0.65*2100,
+        "tau_rel":  0.57*2100,  # slightly better relaxation resistance
+        "tau_W0":   0.33*2100,  # cleaner steel -> higher fatigue ratio
+        "k_H":      0.18,
+        "color":    "#1a9641",
+        "note":     "Bekaert/Garphyttan OTEVA 90 SC  |  Porsche GT3, BMW M, Koenigsegg",
+    },
+    "OTEVA 95 SC\n(Bekaert — top)": {
+        "R_m":      2200.0,
+        "E_GPa":    207.0,
+        "rho":      7.85,
+        "tau_ult":  0.65*2200,
+        "tau_rel":  0.57*2200,
+        "tau_W0":   0.34*2200,  # highest fatigue ratio for steel wire
+        "k_H":      0.17,
+        "color":    "#d7191c",
+        "note":     "Bekaert OTEVA 95 SC  |  highest-strength steel wire commercially available",
+    },
+    "Beta-Ti\n(Ti-3-8-6-4-4)": {
+        "R_m":      1240.0,
+        "E_GPa":    100.0,      # Beta-C elastic modulus
+        "rho":      4.82,       # g/cm³  (~39% lighter than steel)
+        "tau_ult":  0.577*1240, # von Mises: τ_ult = R_m/√3
+        "tau_rel":  0.50*1240,  # Ti set limit ~50% R_m
+        "tau_W0":   430.0,      # MPa  shot-peened + nitrided; literature value
+        "k_H":      0.15,       # Ti less notch-sensitive
+        "color":    "#756bb1",
+        "note":     "Ti-3Al-8V-6Cr-4Mo-4Zr (Beta-C)  |  ~39% lighter; niche motorsport",
+    },
+}
+
+# Compute per-material safety factors at the FEA operating point (bottom coil)
+for mname, mp in MATERIALS.items():
+    tau_W = mp["tau_W0"] / (1.0 + mp["k_H"] * tau_m_bot / mp["tau_W0"])
+    mp["S_HCF"]  = tau_W / tau_a_bot
+    mp["S_stat"] = mp["tau_rel"] / tau2_bot
+    mp["tau_W_allow"] = tau_W
+
+# Default to current material for downstream stress section
+_cur = MATERIALS["VD SiCrNi SC\n(current)"]
+tau_W0   = _cur["tau_W0"]
+k_haigh  = _cur["k_H"]
+tau_rel  = _cur["tau_rel"]
+tau_B    = _cur["tau_ult"]
+R_m      = _cur["R_m"]
+
+tau_W_bot  = _cur["tau_W_allow"]
+tau_W_top  = _cur["tau_W0"] / (1.0 + _cur["k_H"] * tau_m_top / _cur["tau_W0"])
+S_HCF_bot  = _cur["S_HCF"]
+S_HCF_top  = tau_W_top / tau_a_top
+S_stat_bot = _cur["S_stat"]
+S_stat_top = _cur["tau_rel"] / tau2_top
 
 print(f"\n  Stress analysis — bottom coil (D_m={D_m_bot:.2f} mm, C={C_bot:.2f}, k_w={k_w_bot:.3f}):")
 print(f"    tau_1={tau1_bot:.0f} MPa  tau_2={tau2_bot:.0f} MPa  tau_a={tau_a_bot:.0f} MPa  tau_m={tau_m_bot:.0f} MPa")
@@ -213,6 +279,9 @@ print(f"    tau_W={tau_W_bot:.0f} MPa  S_HCF={S_HCF_bot:.2f}  S_stat={S_stat_bot
 print(f"  Stress analysis — top coil (D_m={D_m_top:.2f} mm, C={C_top:.2f}, k_w={k_w_top:.3f}):")
 print(f"    tau_1={tau1_top:.0f} MPa  tau_2={tau2_top:.0f} MPa  tau_a={tau_a_top:.0f} MPa  tau_m={tau_m_top:.0f} MPa")
 print(f"    tau_W={tau_W_top:.0f} MPa  S_HCF={S_HCF_top:.2f}  S_stat={S_stat_top:.2f}")
+print("\n  Material safety overview (bottom coil operating point):")
+for mname, mp in MATERIALS.items():
+    print(f"    {mname.replace(chr(10),' '):30s}  S_HCF={mp['S_HCF']:.2f}  S_stat={mp['S_stat']:.2f}")
 
 # ── Helper: page header ───────────────────────────────────────────────────────
 def header(fig, title, page):
@@ -553,135 +622,122 @@ with PdfPages(PDF) as pdf:
 
     pdf.savefig(fig, bbox_inches="tight"); plt.close(fig)
 
-    # ── Page 5: Stress analysis ───────────────────────────────────────────────
+    # ── Page 5: Torsional stress + multi-material Goodman/Haigh diagram ─────────
     fig = plt.figure(figsize=(11.69, 8.27))
-    header(fig, "Torsional Stress Analysis & HCF Assessment", 5)
+    header(fig, "Torsional Stress Analysis & Multi-Material Goodman Diagram", 5)
 
-    gs5 = gridspec.GridSpec(1, 2, figure=fig, left=0.06, right=0.96,
-                            top=0.91, bottom=0.07, wspace=0.35)
+    gs5 = gridspec.GridSpec(1, 2, figure=fig, left=0.06, right=0.97,
+                            top=0.91, bottom=0.07, wspace=0.32)
 
-    # Left: text summary
-    ax_txt = fig.add_subplot(gs5[0, 0]); ax_txt.axis("off")
-    ax_txt.set_title("Stress Analysis — Oval Wire Spring", fontsize=10,
-                     fontweight="bold", pad=6)
+    # ── Left: Haigh / Goodman diagram with all materials overlaid ────────────
+    ax_h = fig.add_subplot(gs5[0, 0])
 
-    def section(ax_t, y, heading, lines, bg="#f0f4ff"):
-        HEAD_GAP = 0.028   # heading baseline → first body line
-        LINE_DY  = 0.022   # body line spacing (axes fraction)
-        PAD_TOP  = 0.010   # box extends above heading
-        INTER    = 0.015   # gap below box before next section
-        n = len(lines)
-        box_top = y + PAD_TOP
-        box_bot = y - HEAD_GAP - n * LINE_DY
-        box = FancyBboxPatch((0.01, box_bot), 0.98, box_top - box_bot,
-                              boxstyle="round,pad=0.01", linewidth=0.8,
-                              edgecolor="#aac", facecolor=bg,
-                              transform=ax_t.transAxes)
-        ax_t.add_patch(box)
-        ax_t.text(0.04, y, heading, fontsize=8.5, fontweight="bold", color="#1a3a6b",
-                  transform=ax_t.transAxes)
-        for i, ln in enumerate(lines):
-            ax_t.text(0.05, y - HEAD_GAP - i * LINE_DY, ln, fontsize=7.5, color="#222",
-                      transform=ax_t.transAxes, family="monospace")
-        return box_bot - INTER
+    # x-axis range: up to max τ_ult across all materials
+    tau_m_max = max(mp["tau_ult"] for mp in MATERIALS.values()) * 0.92
+    tau_a_max = max(mp["tau_W0"]  for mp in MATERIALS.values()) * 1.25
+    tau_m_arr = np.linspace(0, tau_m_max, 500)
 
-    y = 0.96
-    y = section(ax_txt, y, "Formula — DIN EN 13906-3 (oval wire):",
-                [r"τ = k_w · 8·F·D_m / (π · d_a · d_r²)",
-                 r"C = D_m / d_r    (spring index)",
-                 r"k_w = (4C–1)/(4C–4) + 0.615/C    (Wahl factor)"],
-                bg="#f0f4ff")
+    for mname, mp in MATERIALS.items():
+        # Haigh fatigue limit line
+        tw = mp["tau_W0"] / (1 + mp["k_H"] * tau_m_arr / mp["tau_W0"])
+        tw = np.clip(tw, 0, mp["tau_ult"])
+        ax_h.plot(tau_m_arr, tw, color=mp["color"], lw=2.0,
+                  label=f"{mname.replace(chr(10),' ')}  τ_W0={mp['tau_W0']:.0f} MPa")
+        # Static (set) limit line: τ_a + τ_m = τ_rel
+        ax_h.plot([0, mp["tau_rel"]], [mp["tau_rel"], 0],
+                  color=mp["color"], lw=0.9, linestyle=":", alpha=0.7)
 
-    y = section(ax_txt, y, "Wire & Coil Geometry:",
-                [f"Wire section:   d_a = {wire_a} mm (axial)  ×  d_r = {wire_r} mm (radial)",
-                 f"D_m  bot coil:  {D_m_bot:.2f} mm   →  C = {C_bot:.2f},  k_w = {k_w_bot:.3f}",
-                 f"D_m  top coil:  {D_m_top:.2f} mm   →  C = {C_top:.2f},  k_w = {k_w_top:.3f}"],
-                bg="#f0f4ff")
+    # Shaded "safe" zone for best material (OTEVA 95 SC)
+    best_m = MATERIALS["OTEVA 95 SC\n(Bekaert — top)"]
+    tw_best = best_m["tau_W0"] / (1 + best_m["k_H"] * tau_m_arr / best_m["tau_W0"])
+    tw_best = np.clip(tw_best, 0, best_m["tau_ult"])
+    ax_h.fill_between(tau_m_arr, tw_best, alpha=0.07, color=best_m["color"],
+                      label="_nolegend_")
 
-    y = section(ax_txt, y, "Loading — from FEA results:",
-                [f"Preload  (lift = 0 mm):     F1 = {F_PRELOAD_FEA:.0f} N",
-                 f"Full lift (lift = 10 mm):   F2 = {F_FULL_LIFT_FEA:.0f} N",
-                 f"Force range:                ΔF = {F_FULL_LIFT_FEA - F_PRELOAD_FEA:.0f} N"],
-                bg="#fff4e0")
-
-    y = section(ax_txt, y, "Torsional Stresses:",
-                [f"Bottom coil (critical):  τ1 = {tau1_bot:.0f} MPa  /  τ2 = {tau2_bot:.0f} MPa",
-                 f"                         Δτ = {tau2_bot-tau1_bot:.0f} MPa",
-                 f"Top coil:                τ1 = {tau1_top:.0f} MPa  /  τ2 = {tau2_top:.0f} MPa",
-                 f"                         Δτ = {tau2_top-tau1_top:.0f} MPa"],
-                bg="#ffe8e8" if tau2_bot > tau_rel else "#e8f8e8")
-
-    y = section(ax_txt, y, f"Material: VD SiCrNi SC (shot-peened)   R_m = {R_m:.0f} MPa:",
-                [f"τ_B  = 0.65·R_m = {tau_B:.0f} MPa  (ultimate shear)",
-                 f"τ_rel= 0.56·R_m = {tau_rel:.0f} MPa  (set/relaxation limit)",
-                 f"τ_W0 = 0.31·R_m = {tau_W0:.0f} MPa  (fully reversed fatigue limit, SP)",
-                 f"k_H  = {k_haigh:.2f}            (Haigh slope, DIN EN 13906)"],
-                bg="#f0f0f0")
-
-    y = section(ax_txt, y, "Safety Factors:",
-                [f"Bottom coil:  S_stat = τ_rel/τ2 = {tau_rel:.0f}/{tau2_bot:.0f} = {S_stat_bot:.2f}"
-                 f"{'  ⚠ MARGINAL' if S_stat_bot < 1.2 else '  ✓ OK'}",
-                 f"              S_HCF  = τ_W/τ_a = {tau_W_bot:.0f}/{tau_a_bot:.0f} = {S_HCF_bot:.2f}"
-                 f"{'  ✓ OK' if S_HCF_bot >= 1.2 else '  ✗ FAIL'}",
-                 f"Top coil:     S_stat = {S_stat_top:.2f}"
-                 f"{'  ✓ OK' if S_stat_top >= 1.2 else '  ✗ FAIL'}",
-                 f"              S_HCF  = {S_HCF_top:.2f}"
-                 f"{'  ✓ OK' if S_HCF_top >= 1.2 else '  ✗ FAIL'}"],
-                bg="#e8f8e8" if (S_stat_bot >= 1.2 and S_HCF_bot >= 1.2) else "#fff0e0")
-
-    # Right: Haigh diagram
-    ax_h = fig.add_subplot(gs5[0, 1])
-    tau_m_range = np.linspace(0, tau_B, 400)
-    tau_W_line  = tau_W0 / (1 + k_haigh * tau_m_range / tau_W0)
-    tau_W_line  = np.clip(tau_W_line, 0, tau_B)
-
-    ax_h.fill_between(tau_m_range, tau_W_line, alpha=0.12, color="green",
-                      label="Safe zone (Haigh, k=0.20)")
-    ax_h.plot(tau_m_range, tau_W_line, "g-", lw=1.8, label=f"Fatigue limit (τ_W0={tau_W0:.0f} MPa)")
-
-    # Static limit line τ_a + τ_m = τ_rel
-    ax_h.plot([0, tau_rel], [tau_rel, 0], "r--", lw=1.4, alpha=0.7,
-              label=f"Static limit  τ_m+τ_a = τ_rel={tau_rel:.0f} MPa")
-
-    # Operating points
-    ax_h.plot(tau_m_bot, tau_a_bot, "bo", ms=12, zorder=6,
-              label=f"Bottom coil  τ_m={tau_m_bot:.0f}, τ_a={tau_a_bot:.0f} MPa")
-    ax_h.annotate(
-        f"Bot coil\nτ_m={tau_m_bot:.0f}\nτ_a={tau_a_bot:.0f}\nS_HCF={S_HCF_bot:.2f}",
-        xy=(tau_m_bot, tau_a_bot), xytext=(tau_m_bot - 180, tau_a_bot + 40),
-        fontsize=7.5, color="blue",
-        arrowprops=dict(arrowstyle="->", color="blue", lw=0.8))
-
-    ax_h.plot(tau_m_top, tau_a_top, "g^", ms=11, zorder=6,
-              label=f"Top coil  τ_m={tau_m_top:.0f}, τ_a={tau_a_top:.0f} MPa")
-    ax_h.annotate(
-        f"Top coil\nτ_m={tau_m_top:.0f}\nτ_a={tau_a_top:.0f}\nS_HCF={S_HCF_top:.2f}",
-        xy=(tau_m_top, tau_a_top), xytext=(tau_m_top - 180, tau_a_top + 40),
-        fontsize=7.5, color="darkgreen",
-        arrowprops=dict(arrowstyle="->", color="darkgreen", lw=0.8))
+    # Operating points — bottom and top coil
+    markers = [("Bottom coil\n(critical)", tau_m_bot, tau_a_bot, "s", 11, "#222"),
+               ("Top coil",               tau_m_top, tau_a_top, "^",  9, "#555")]
+    for label, tm, ta, mk, ms_pt, mc in markers:
+        ax_h.plot(tm, ta, marker=mk, ms=ms_pt, color=mc, zorder=8,
+                  markeredgecolor="white", markeredgewidth=1.0)
+        ax_h.annotate(f"{label}\nτ_m={tm:.0f}\nτ_a={ta:.0f} MPa",
+                      xy=(tm, ta), xytext=(tm + 40, ta + 30),
+                      fontsize=7.5, color=mc,
+                      arrowprops=dict(arrowstyle="->", color=mc, lw=0.8))
 
     ax_h.set_xlabel("Mean torsional stress  τ_m  [MPa]", fontsize=10)
     ax_h.set_ylabel("Torsional stress amplitude  τ_a  [MPa]", fontsize=10)
-    ax_h.set_title(f"Haigh Diagram — Torsional Fatigue\n"
-                   f"VD SiCrNi SC  R_m={R_m:.0f} MPa,  shot-peened",
+    ax_h.set_title("Haigh Diagram — All Materials\n"
+                   "Solid: fatigue limit  |  Dotted: static (set) limit",
                    fontsize=10, fontweight="bold")
-    ax_h.set_xlim(0, tau_B * 0.85)
-    ax_h.set_ylim(0, tau_B * 0.55)
+    ax_h.set_xlim(0, tau_m_max)
+    ax_h.set_ylim(0, tau_a_max)
     ax_h.legend(fontsize=7.5, loc="upper right")
-    ax_h.grid(True, alpha=0.3)
+    ax_h.grid(True, alpha=0.25)
 
-    # Verdict box
-    verdict_bot = "PASS" if (S_stat_bot >= 1.2 and S_HCF_bot >= 1.2) else "MARGINAL"
-    verdict_col = "#c8e6c9" if verdict_bot == "PASS" else "#fff3e0"
-    ax_h.text(0.02, 0.05,
-              f"Critical location: bottom coil\n"
-              f"τ_max = {tau2_bot:.0f} MPa  (S_stat = {S_stat_bot:.2f})\n"
-              f"τ_a   = {tau_a_bot:.0f} MPa  (S_HCF  = {S_HCF_bot:.2f})\n"
-              f"Verdict:  {verdict_bot}\n"
-              f"Note: shot-peening residuals (~400 MPa)\n"
-              f"provide additional fatigue margin.",
-              transform=ax_h.transAxes, va="bottom", fontsize=8.5,
-              bbox=dict(boxstyle="round,pad=0.5", facecolor=verdict_col,
+    # Annotation: operating point distance to each fatigue line
+    ax_h.axvline(tau_m_bot, color="#aaa", lw=0.7, ls="--", alpha=0.6)
+    ax_h.axhline(tau_a_bot, color="#aaa", lw=0.7, ls="--", alpha=0.6)
+
+    # ── Right: material comparison table + stress summary ───────────────────
+    ax_r = fig.add_subplot(gs5[0, 1]); ax_r.axis("off")
+    ax_r.set_title("Material Comparison — Valve Spring Wire\n"
+                   f"Operating point: bottom coil  τ_m={tau_m_bot:.0f} MPa, τ_a={tau_a_bot:.0f} MPa",
+                   fontsize=9.5, fontweight="bold", pad=6)
+
+    col_labels = ["Material", "R_m\n[MPa]", "E\n[GPa]", "ρ\n[g/cm³]",
+                  "τ_W0\n[MPa]", "S_HCF", "S_stat", "Note"]
+    tbl_rows = []
+    for mname, mp in MATERIALS.items():
+        tbl_rows.append([
+            mname.replace("\n", " "),
+            f"{mp['R_m']:.0f}",
+            f"{mp['E_GPa']:.0f}",
+            f"{mp['rho']:.2f}",
+            f"{mp['tau_W0']:.0f}",
+            f"{mp['S_HCF']:.2f}",
+            f"{mp['S_stat']:.2f}",
+            mp["note"].split("|")[0].strip(),
+        ])
+
+    col_w = [0.18, 0.08, 0.07, 0.08, 0.08, 0.07, 0.07, 0.32]
+    tbl_m = ax_r.table(cellText=tbl_rows, colLabels=col_labels,
+                       loc="upper center", cellLoc="center", colWidths=col_w)
+    tbl_m.auto_set_font_size(False)
+    tbl_m.set_fontsize(7.5)
+    tbl_m.scale(1, 1.85)
+    for (r, c), cell in tbl_m.get_celld().items():
+        if r == 0:
+            cell.set_facecolor("#2c3e50"); cell.set_text_props(color="w", fontweight="bold")
+        else:
+            mp_list = list(MATERIALS.values())
+            if r - 1 < len(mp_list):
+                cell.set_facecolor(mp_list[r-1]["color"] + "22")
+            if r == len(MATERIALS):  # best material row
+                cell.set_facecolor(best_m["color"] + "55")
+
+    # Stress summary box
+    ax_r.text(0.5, 0.42,
+              f"Stress analysis — DIN EN 13906-3 (oval wire)\n"
+              f"τ = k_w · 8·F·D_m / (π · d_a · d_r²)\n\n"
+              f"Wire:  d_a = {wire_a} mm (axial)  ×  d_r = {wire_r} mm (radial)\n"
+              f"Bottom coil:  D_m = {D_m_bot:.1f} mm,  C = {C_bot:.2f},  k_w = {k_w_bot:.3f}\n"
+              f"Top coil:     D_m = {D_m_top:.1f} mm,  C = {C_top:.2f},  k_w = {k_w_top:.3f}\n\n"
+              f"Preload (F₁ = {F_PRELOAD_FEA:.0f} N):\n"
+              f"  τ₁_bot = {tau1_bot:.0f} MPa   τ₁_top = {tau1_top:.0f} MPa\n"
+              f"Full lift (F₂ = {F_FULL_LIFT_FEA:.0f} N):\n"
+              f"  τ₂_bot = {tau2_bot:.0f} MPa   τ₂_top = {tau2_top:.0f} MPa\n\n"
+              f"Bottom coil operating point:\n"
+              f"  τ_m = {tau_m_bot:.0f} MPa   τ_a = {tau_a_bot:.0f} MPa\n\n"
+              f"RECOMMENDATION:\n"
+              f"  OTEVA 95 SC (Bekaert) gives the highest\n"
+              f"  S_HCF = {MATERIALS['OTEVA 95 SC\n(Bekaert — top)']['S_HCF']:.2f} and best\n"
+              f"  relaxation resistance at elevated temp.\n"
+              f"  For weight-critical racing: Beta-Ti offers\n"
+              f"  ~39% mass reduction at S_HCF = {MATERIALS['Beta-Ti\n(Ti-3-8-6-4-4)']['S_HCF']:.2f}.",
+              ha="center", va="top", fontsize=8.5,
+              transform=ax_r.transAxes,
+              bbox=dict(boxstyle="round,pad=0.5", facecolor="#fefefe",
                         edgecolor="#888", linewidth=0.8))
 
     pdf.savefig(fig, bbox_inches="tight"); plt.close(fig)

@@ -51,7 +51,7 @@ N_TOTAL   = 8.6
 N_ACTIVE  = N_TOTAL - 2 * N_CLOSED   # 6.1 active coils
 H_CLOSED  = N_CLOSED * WIRE_A
 H_ACTIVE  = L0 - 2 * H_CLOSED
-D_PITCH   = 0.18                     # pitch gradient (must match generate_spring.py)
+D_PITCH   = 0.15                     # pitch gradient (must match generate_spring.py)
 pitch_mean = H_ACTIVE / N_ACTIVE     # mean active pitch [mm]
 Z_CONTACT_BOT = grind_z + 0.5               # 1.25 mm — just above ground face; includes closed-end coils
 Z_CONTACT_TOP = Z_TOP - 0.5                # just below top face; includes top closed-end coils
@@ -74,7 +74,7 @@ MAX_LIFT    = S_FULL_LIFT        # total simulation range [mm]
 # E calibrated so FEA gives F=250 N at s=10 mm (drawing preload).
 # Prior run (wrong L0=47.44, s_preload=15.84): F(10mm)=367 N at E=273131 MPa.
 # Scaling: E_new = 273131 * 250/367 = 186000 MPa (close to nominal 206000 MPa).
-E_MOD = 186000.0   # calibrated to F(s=10mm)=250 N  (prior: 273131 MPa)
+E_MOD = 177500.0   # recalibrated: 186000*(250/262)=177500 MPa → F(10mm)≈250N
 NU    = 0.30
 
 # Drawing reference points for verification
@@ -85,23 +85,22 @@ REF = [
 
 # -- Analytical progressive spring rate model (3-phase) -----------------------
 # Rates scaled from prior measurement fit (E×186/273 = 0.681):
-#   D_pitch=0.18: p_bot=5.215 mm (gap 2.295), p_top=7.506 mm
-#   s_preload = L0-L1 = 46.1-36.1 = 10.0 mm  ->  s_bind=14.0 mm  ->  kink1 at lift=4.0 mm
-#   Phase 1 (lift 0  ->  4.0 mm): k ≈ 23.6 N/mm  (pre-binding)
-#   Phase 2 (lift 4.0->  7.5 mm): k ≈ 24.9 N/mm  (large-OD bottom coils binding)
-#   Phase 3 (lift 7.5-> 10.0 mm): k ≈ 27.9 N/mm  (mid-OD upper coils binding)
+#   D_pitch=0.15: s_bind=38.80*0.85 - 6.1*2.92 = 15.17 mm -> kink1 at lift=5.2 mm
+#   Phase 1 (lift 0  ->  5.2 mm): k ≈ 22.6 N/mm  (pre-binding, E scaled 186->177.5)
+#   Phase 2 (lift 5.2->  8.0 mm): k ≈ 23.8 N/mm  (top coils binding)
+#   Phase 3 (lift 8.0-> 10.0 mm): k ≈ 26.7 N/mm  (mid-OD coils binding)
 #   Note: FEA will refine these estimates; analytical model is indicative only.
 
-LIFT_KINK1   = 4.0
-LIFT_KINK2   = 7.5
+LIFT_KINK1   = 5.2
+LIFT_KINK2   = 8.0
 S_KINK1      = S_PRELOAD + LIFT_KINK1
 S_KINK2      = S_PRELOAD + LIFT_KINK2
-F_KINK1      = F_PRELOAD + 23.64 * LIFT_KINK1
-F_KINK2      = F_KINK1   + 24.89 * (LIFT_KINK2 - LIFT_KINK1)
+F_KINK1      = F_PRELOAD + 22.60 * LIFT_KINK1
+F_KINK2      = F_KINK1   + 23.80 * (LIFT_KINK2 - LIFT_KINK1)
 
-k_ana_phase1 = 23.64  # N/mm  (lift 0  -> 4.0 mm)
-k_ana_phase2 = 24.89  # N/mm  (lift 4.0 -> 7.5 mm)
-k_ana_phase3 = 27.87  # N/mm  (lift 7.5 -> 10.0 mm)
+k_ana_phase1 = 22.60  # N/mm  (lift 0  -> 5.2 mm)
+k_ana_phase2 = 23.80  # N/mm  (lift 5.2 -> 8.0 mm)
+k_ana_phase3 = 26.70  # N/mm  (lift 8.0 -> 10.0 mm)
 
 def analytical_force(s):
     """3-phase progressive spring force [N] at compression s [mm].

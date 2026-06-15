@@ -46,11 +46,11 @@ F_FULL_LIFT = 620.7    # force at full lift [N]  (measurement)
 S_PRELOAD   = L0 - L_INSTALLED    # 10.0 mm
 S_FULL_LIFT = L0 - L_FULL_LIFT    # 20.0 mm
 
-LIFT_KINK1 = 4.0
-LIFT_KINK2 = 7.5
+LIFT_KINK1 = 5.2
+LIFT_KINK2 = 8.0
 S_KINK1    = S_PRELOAD + LIFT_KINK1
 S_KINK2    = S_PRELOAD + LIFT_KINK2
-k1, k2, k3 = 23.64, 24.89, 27.87
+k1, k2, k3 = 22.60, 23.80, 26.70
 F_KINK1    = F_PRELOAD + k1 * LIFT_KINK1
 F_KINK2    = F_KINK1   + k2 * (LIFT_KINK2 - LIFT_KINK1)
 

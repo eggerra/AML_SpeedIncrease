@@ -47,13 +47,12 @@ pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
 
 # D_pitch controls the pitch gradient.  D_pitch > 0 -> less pitch at bottom
 # (large OD), more pitch at top (small OD).
-# Derived for L0=46.1 mm geometry to place kink1 at lift=4.0 mm from L1=36.1 mm:
-#   h_active = 46.1 - 2*1.25*2.92 = 38.8 mm,  n_active = 6.1,  pitch_mean = 6.361 mm
-#   s_preload = L0-L1 = 46.1-36.1 = 10.0 mm  ->  s_bind = 10.0+4.0 = 14.0 mm
+# Derived for L0=46.1 mm geometry to place kink1 at lift=5.2 mm from L1=36.1 mm:
+#   s_bind = 10.0+5.2 = 15.2 mm
 #   -> D_pitch = 1 - (s_bind + n_active*wire_a)/h_active
-#             = 1 - (14.0 + 6.1*2.92)/38.8 = 0.1800
-# D_pitch = 0.18  ->  p_bot = 5.215 mm (gap 2.295 mm), p_top = 7.506 mm (gap 4.586 mm)
-D_pitch    = 0.18
+#             = 1 - (15.2 + 6.1*2.92)/38.8 = 0.1497 ≈ 0.15
+# D_pitch = 0.15  ->  p_bot = 5.407 mm (gap 2.487 mm), p_top = 7.315 mm (gap 4.395 mm)
+D_pitch    = 0.15
 
 p_bot  = pitch_mean * (1 - D_pitch)
 p_top  = pitch_mean * (1 + D_pitch)
