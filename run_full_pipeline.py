@@ -270,9 +270,9 @@ STA_FILE        = os.path.join(BASE, ABQ_JOB + ".sta")
 MONITOR_SECS    = 600   # 10 minutes
 POLL_SECS       = 30    # check process exit every 30 s
 
-print("\n--- Abaqus/Standard solve + postprocess (16 cpus) ---")
+print("\n--- Abaqus/Standard solve + postprocess (14 cpus) ---")
 proc = subprocess.Popen(
-    [sys.executable, os.path.join(BASE, "run_abaqus.py"), "16"],
+    [sys.executable, os.path.join(BASE, "run_abaqus.py"), "14"],
     cwd=BASE, env={**os.environ},
 )
 

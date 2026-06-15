@@ -32,7 +32,7 @@ PLOT_FILE   = os.path.join(BASE, "spring_FvL_abaqus.png")
 MEAS_FILE   = os.path.join(BASE, "INT_Spring_measurement.txt")
 POST_SCRIPT = os.path.join(BASE, "postprocess_abaqus.py")
 
-CPUS_DEFAULT = 16
+CPUS_DEFAULT = 14
 
 # ── Spring parameters (oval, c=0.1, n_closed=1.25 — from spring_analysis.py) ──
 # L0_oval = h_active + 2*n_closed*wire_a_eff_oval
@@ -206,10 +206,21 @@ def run_abaqus(cpus):
     cmd = [ABAQUS, f"job={ABQ_JOB}", f"cpus={cpus}", "mp_mode=threads", "interactive"]
     print(f"\n--- Running Abaqus: {' '.join(cmd)} ---")
     t0 = time.time()
+    # Remove stale odb so a fast-fail is unambiguous and postprocess can't use old data.
+    odb = os.path.join(BASE, ABQ_JOB + ".odb")
+    if os.path.isfile(odb):
+        try:
+            os.remove(odb)
+        except OSError:
+            pass
     r = subprocess.run(cmd, cwd=BASE)
     elapsed = time.time() - t0
     if r.returncode not in (0, 2):   # Abaqus returns 2 on warning-only completion
         sys.exit(f"Abaqus solver failed (code {r.returncode})  [{elapsed:.0f}s]")
+    # Verify the odb was actually created — exit code 2 can mask a pre-run error
+    if not os.path.isfile(odb):
+        sys.exit(f"Abaqus solver exited (code {r.returncode}) but no .odb was created "
+                 f"[{elapsed:.0f}s] — check cpus, licensing, or input errors")
     print(f"  Solver done in {elapsed:.0f}s")
 
 
