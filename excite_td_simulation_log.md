@@ -4,8 +4,8 @@
 **Spring preload:** 280 N  
 **RPM sweep:** 7000–7700 rpm (7 cases)  
 **Total duration:** 15 cam cycles (5400°)  
-**Last updated:** 2026-06-15 10:57:12  
-**Monitor elapsed:** 0.9 h
+**Last updated:** 2026-06-15 11:07:27  
+**Monitor elapsed:** 1.0 h
 
 ## Run Progress
 
@@ -15,9 +15,9 @@
 | 7100 | ▶ running | 5399.0° | 100.0% | — |
 | 7200 | ▶ running | 5399.0° | 100.0% | — |
 | 7300 | ▶ running | 5399.0° | 100.0% | — |
-| 7400 | ▶ running | 5399.2° | 100.0% | — |
-| 7500 | ▶ running | 5400.0° | 100.0% | — |
-| 7700 | ▶ running | 5399.7° | 100.0% | — |
+| 7400 | ? completed | 5399.2° | 100.0% | — |
+| 7500 | ? completed | 5400.0° | 100.0% | — |
+| 7700 | ? completed | 5399.7° | 100.0% | — |
 
 ## Overall Progress
 
