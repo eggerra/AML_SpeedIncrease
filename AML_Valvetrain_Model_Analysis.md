@@ -593,6 +593,12 @@ The ~65 µm steady-state extension in the 280 N case is the nominal HLA lash com
 
 ### 10.5 Plots
 
+**HLA lift vs cam angle — 10 cycles overlaid (INTL_HLIF4, worst-case element):**
+
+![HLA lift vs cam angle](excite_td/analysis_plots/HLIF_LB_280N_lift_vs_angle.png)
+
+*Each coloured line is one cam cycle (blue = cycle 1, orange = cycle 10). All 10 cycles coincide across the full cam angle range. In the green base-circle band (190–360°) the HLA lift is stable at ~33 µm with no upward drift — confirming no pump-up. The dynamic oscillations during the opening/closing flanks (~90–180°) are normal HLA plunger motion as the cam follower loads and unloads the lash adjuster.*
+
 **Base-circle lift per cam cycle — all 8 HLIF elements, all speeds:**
 
 ![HLIF base-circle lift per cycle](excite_td/analysis_plots/HLIF_LB_280N_pumpup_basecircle.png)
