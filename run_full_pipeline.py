@@ -287,6 +287,20 @@ while proc.poll() is None:
             f"RUNNING — {elapsed_h:.1f} h elapsed — {sta}",
         )
         last_monitor = now
+        # Push simulation_log.md so progress is visible on git without waiting for run end
+        subprocess.run(
+            ["git", "-C", BASE, "add", "simulation_log.md"],
+            check=False, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "-C", BASE, "commit", "-m",
+             f"sim: status update — {sta}"],
+            check=False, capture_output=True,
+        )
+        subprocess.run(
+            ["git", "-C", BASE, "push"],
+            check=False, capture_output=True,
+        )
     time.sleep(POLL_SECS)
 
 elapsed_abq = time.time() - t_abq_start
