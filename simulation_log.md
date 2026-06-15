@@ -85,3 +85,11 @@
 
 ## 2026-06-15 13:16:20  —  Abaqus solve
 **Status:** RUNNING — 3.8 h elapsed — Step 2 Inc 165  total=1.00 s  step=17.00 mm
+
+## 2026-06-15 13:22:50  —  Abaqus solve
+**Status:** COMPLETED — 39 result points  F=87–9377 N  wall=3.9h
+
+## Summary
+- Total wall time: 3.9h (Abaqus only)
+- Plot: D:\Projects_AI\AML_SpeedIncrease\spring_FvL_abaqus.png
+- RF data: D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact_abaqus_rf.txt
