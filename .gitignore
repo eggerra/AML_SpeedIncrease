@@ -1,0 +1,76 @@
+# Abaqus solver output
+*.odb
+*.sim
+*.mdl
+*.prt
+*.stt
+*.msg
+*.sta
+*.dat
+*.frd
+*.cvg
+*.12d
+*.com
+*.env
+*.rpy
+*.rec
+*.log
+*.exception
+*.SMABulk
+*.simlog
+*.simdir/
+abaqus*.txt
+
+# Mesh / geometry intermediate files
+*_mesh.inp
+*_meshed.FCStd
+*.FCBak
+*.FCStd
+*.stl
+*.brep
+*.geo
+
+# Images / animations (generated output — not version-controlled)
+*.png
+*.gif
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Probe / debug / scratch scripts
+_probe*.py
+_probe_*.py
+_test_*.py
+_test_*.inp
+_viz_*.py
+_task_status.py
+_mesh_config.json
+
+# Pipeline temporary files
+pipeline_*.log
+abaqus_run.log
+abaqus_acis.log
+freecad_gen.log
+ccx_run.log
+spring_fea_run.log
+.sim_monitor_done
+
+# IDE
+.idea/
+*.iml
+
+# Old CalculiX INP/results (superseded by Abaqus pipeline)
+ValveSpring_contact.*
+ValveSpring_fea.*
+ValveSpring_ellipse_contact.*
+
+# Abaqus job artifacts (large binary / auto-generated INP)
+ValveSpring_oval_contact_abaqus.inp
+ValveSpring_oval_contact_abaqus.dat
+ValveSpring_abq_mesh.inp
+
+# OS
+Thumbs.db
+.DS_Store
