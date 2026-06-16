@@ -348,3 +348,27 @@ coil surfaces begin resisting at ~0.01 mm overclosure, matching physical coil-to
 | F @ kink1    (lift=4.0 mm)  | 345 N | **379 N** | ~345 N | +9.7% |
 | F @ kink2    (lift=7.5 mm)  | 432 N | **499 N** | ~432 N | +15.4% |
 | F @ full lift (s=20.0 mm) | 621 N | **671 N** | 620.7 N | +8.1% |
+
+
+## Abaqus Results (2026-06-16)
+
+**Abaqus/Standard results (2026-06-16, L0=46.1 mm, Abaqus CAE 0.5mm C3D4, 14 threads):**
+
+| Quantity | Analytical (3-phase) | **FEA** | Measurement | FEA error |
+|----------|---------------------|---------|-------------|-----------|
+| F @ preload  (s=10.0 mm) | 250 N | **244 N** | 249 N | -2.1% |
+| F @ kink1    (lift=4.0 mm)  | 345 N | **354 N** | ~345 N | +2.5% |
+| F @ kink2    (lift=7.5 mm)  | 432 N | **462 N** | ~432 N | +6.8% |
+| F @ full lift (s=20.0 mm) | 621 N | **616 N** | 620.7 N | -0.7% |
+
+
+## Abaqus Results (2026-06-16)
+
+**Abaqus/Standard results (2026-06-16, L0=47.43 mm, Abaqus CAE 0.5mm C3D4, 14 threads):**
+
+| Quantity | Analytical (3-phase) | **FEA** | Target | FEA error |
+|----------|---------------------|---------|--------|-----------|
+| F @ preload  (s=11.33 mm) | 280 N | **280 N** | 280 N | -0.1% |
+| F @ kink1    (lift=4.0 mm)  | 370 N | **391 N** | ~370 N | +5.6% |
+| F @ kink2    (lift=7.5 mm)  | 452 N | **533 N** | ~452 N | +17.8% |
+| F @ full lift (s=21.33 mm) | 518 N | **798 N** | ~518 N | +54.1% |

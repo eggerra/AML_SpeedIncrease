@@ -421,3 +421,23 @@
 
 **HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
   - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
+
+## 2026-06-16 13:41:18  —  Abaqus solve
+**Status:** COMPLETED — 16 result points  F=59–798 N  wall=12.5h
+
+## 2026-06-16 13:41:18  —  PDF report
+**Status:** RUNNING — generate_report.py
+
+## 2026-06-16 13:41:21  —  Abaqus solve
+**Status:** COMPLETED — 16 result points  F=59–798 N  wall=4.2h
+
+## 2026-06-16 13:41:21  —  PDF report
+**Status:** RUNNING — generate_report.py
+
+## 2026-06-16 13:41:25  —  PDF report
+**Status:** DONE — ValveSpring_FEA_Report.pdf
+
+## Summary
+- Total wall time: 4.2h (Abaqus only)
+- Plot: D:\Projects_AI\AML_SpeedIncrease\spring_FvL_abaqus.png
+- RF data: D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact_abaqus_rf.txt
