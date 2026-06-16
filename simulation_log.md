@@ -1,6 +1,6 @@
 # Preload Sweep Log
 
-**Run started:** 2026-06-16 21:52:21
+**Run started:** 2026-06-16 22:21:18
 **Cases:** 250 N / 265 N / 280 N  (n_closed=0.8, n_active=7.0, Z-morphed C3D4 mesh)
 
 ## Targets
@@ -12,40 +12,18 @@
 
 ## Progress
 
-## 2026-06-16 21:52:21  —  Case 250N START — L0=47.58 mm, n_closed=0.8, s_pre=11.48 mm
+## 2026-06-16 22:21:18  —  Case 250N START — L0=47.58 mm, n_closed=0.8, s_pre=11.48 mm
 
-## 2026-06-16 21:52:21  —  Case 250N — CAD generation RUNNING
+## 2026-06-16 22:21:18  —  Case 250N — CAD generation RUNNING
 
-## 2026-06-16 21:52:39  —  Case 250N — CAD DONE  (3295 kB)
+## 2026-06-16 22:21:36  —  Case 250N — CAD DONE  (3295 kB)
 
-## 2026-06-16 21:52:39  —  Case 250N — Mesh ready  (10755 kB)
+## 2026-06-16 22:21:36  —  Case 250N — Mesh ready  (10755 kB)
 
-## 2026-06-16 21:52:39  —  Case 250N — Writing FEA INP
+## 2026-06-16 22:21:36  —  Case 250N — Writing FEA INP
 
-## 2026-06-16 21:52:41  —  Case 250N — INP DONE  (486 kB)
+## 2026-06-16 22:21:38  —  Case 250N — INP DONE  (486 kB)
 
-## 2026-06-16 21:52:41  —  Case 250N — Abaqus solve RUNNING (14 CPUs)
+## 2026-06-16 22:21:38  —  Case 250N — Abaqus solve RUNNING (14 CPUs)
 
-## 2026-06-16 22:02:19  —  Case 250N — RUNNING 1.0h — Step 2 Inc 19  total=2.00s  step=10.00mm
-
-## 2026-06-16 22:02:41  —  Case 250N — RUNNING 0.2h — Step 2 Inc 21  total=1.00s  step=2.00mm
-
-## 2026-06-16 22:10:17  —  Case 250N — COMPLETED  F=65-794 N  wall=0.3h
-
-## 2026-06-16 22:10:24  —  Case 265N START — L0=48.26 mm, n_closed=0.8, s_pre=12.16 mm
-
-## 2026-06-16 22:10:24  —  Case 265N — CAD generation RUNNING
-
-## 2026-06-16 22:10:39  —  Case 265N — CAD DONE  (3293 kB)
-
-## 2026-06-16 22:10:39  —  Case 265N — Mesh ready  (10756 kB)
-
-## 2026-06-16 22:10:39  —  Case 265N — Writing FEA INP
-
-## 2026-06-16 22:10:42  —  Case 265N — INP DONE  (486 kB)
-
-## 2026-06-16 22:10:42  —  Case 265N — Abaqus solve RUNNING (14 CPUs)
-
-## 2026-06-16 22:11:12  —  Case 265N — Abaqus FAILED (code 1)
-
-## 2026-06-16 22:12:27  —  Case 250N — RUNNING 1.2h — Step 2 Inc 39  total=3.00s  step=10.00mm
+## 2026-06-16 22:22:33  —  Case 250N — RUNNING 1.3h — no .sta yet
