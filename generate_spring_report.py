@@ -55,7 +55,7 @@ EXHAUST = {
     "tau_k2":         "1 040",
     "tau_kh":         "587",
     "nt":             "8.6",
-    "na":             "4.4 – 3.4",
+    "na":             "4.8 – 3.4",
     "e_min":          "0.55",
     "e1":             "1.84",
     "e2":             "0.70",
@@ -89,9 +89,9 @@ INTAKE = {
     "F2":             "620 ± 21",
     "tau_k1":         "419",
     "tau_k2":         "1 040",
-    "tau_kh":         "521",
+    "tau_kh":         "621",
     "nt":             "8.6",
-    "na":             "4.4 – 3.4",
+    "na":             "4.4 – 3.1",
     "e_min":          "0.55",
     "e1":             "1.84",
     "e2":             "0.70",
@@ -317,9 +317,9 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
         row(15, "k_avg — avg. working rate (derived)",    "N/mm", f"{exhaust_k:.1f}", f"{intake_k:.1f}", "Exhaust softer over stroke", diff=True),
         row(16, "τ_k1 — torsional stress at L1",         "N/mm²","453",          "419",          "Exhaust +34 N/mm² (+8 %)", diff=True),
         row(17, "τ_k2 — torsional stress at L2",         "N/mm²","1 040",        "1 040",        "Identical"),
-        row(18, "τ_kh — fatigue / stress range",         "N/mm²","587",          "521",          "Exhaust +66 N/mm² (+13 %)", diff=True),
+        row(18, "τ_kh — fatigue / stress range",         "N/mm²","587",          "621",          "Intake +34 N/mm² (+5.8 %)", diff=True),
         row(19, "nt — total coils",                       "—",    "8.6",          "8.6",          "Identical"),
-        row(20, "na — active coils",                      "—",    "4.4 – 3.4",    "4.4 – 3.4",    "Identical"),
+        row(20, "na — active coils",                      "—",    "4.8 – 3.4",    "4.4 – 3.1",    "Different coil engagement range", diff=True),
         row(21, "e_min — min. coil spacing",              "mm",   "0.55",         "0.55",         "Identical"),
         row(22, "Spring shape",                           "—",    "Beehive",      "Beehive",      "Identical"),
         row(23, "End treatment",                          "—",    "Closed & ground 240°","Closed & ground 240°","Identical"),
@@ -351,7 +351,7 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
         ("ALIGN",        (5,1), (5,-1),  "LEFT"),
     ])
     # highlight diff rows
-    diff_rows = [9, 13, 15, 16, 18, 26]  # 1-indexed from header
+    diff_rows = [9, 13, 15, 16, 18, 20, 26]  # 1-indexed from header
     for r in diff_rows:
         ts.add("BACKGROUND", (3,r), (5,r), colors.HexColor('#FFF3CD'))
     tbl.setStyle(ts)
@@ -361,6 +361,42 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
     story.append(Paragraph(
         "★ Highlighted rows indicate parameters that differ between the two springs.",
         st["note"]))
+
+    story.append(Spacer(1, 5*mm))
+
+    # errata / correction notice
+    ORANGE = colors.HexColor('#E67E22')
+    ORANGE_BG = colors.HexColor('#FEF9E7')
+    errata_title = Paragraph(
+        "<b>Correction Notice — Rev. 2  (2026-06-16)</b>",
+        ParagraphStyle("errata_h", fontSize=9, textColor=ORANGE,
+                       fontName="Helvetica-Bold", spaceAfter=3))
+    errata_body = Paragraph(
+        "An earlier draft of this report (Rev. 1) contained a transcription error in the "
+        "intake spring fatigue stress range: <b>τ_kh was incorrectly stated as 521 N/mm²</b> "
+        "instead of the drawing value of <b>621 N/mm²</b>.  The error arose from misreading "
+        "a digit in the reduced-resolution drawing thumbnail used for initial data extraction "
+        "(the numeral '6' was read as '5').  The correct values satisfy the identity "
+        "<b>τ_k1 + τ_kh = τ_k2</b> for both springs:<br/><br/>"
+        "&nbsp;&nbsp;&nbsp;Exhaust: 453 + 587 = 1 040 N/mm²  ✓<br/>"
+        "&nbsp;&nbsp;&nbsp;Intake:  419 + 621 = 1 040 N/mm²  ✓<br/><br/>"
+        "The correction also updates the active-coil range (row 20): exhaust 4.8–3.4 "
+        "(not 4.4–3.4) and intake 4.4–3.1 (not 4.4–3.4), read from high-resolution crops of "
+        "the original TIF drawings.  All analysis text and conclusions have been updated "
+        "accordingly.  The corrected values are highlighted in this table.",
+        ParagraphStyle("errata_b", fontSize=8.5, textColor=BLACK,
+                       fontName="Helvetica", leading=13))
+    errata_data = [[errata_title], [errata_body]]
+    errata_tbl = Table(errata_data, colWidths=[180*mm])
+    errata_tbl.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0), (-1,-1), ORANGE_BG),
+        ("BOX",           (0,0), (-1,-1), 1.5, ORANGE),
+        ("TOPPADDING",    (0,0), (-1,-1), 7),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 7),
+        ("LEFTPADDING",   (0,0), (-1,-1), 10),
+        ("RIGHTPADDING",  (0,0), (-1,-1), 10),
+    ]))
+    story.append(errata_tbl)
 
     story.append(PageBreak())
 
@@ -404,15 +440,19 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
 
         ("4. Fatigue Stress Range and Durability",
          """The fatigue stress range τ_kh = τ_k2 − τ_k1 is the primary HCF driver for valve
-         springs. The exhaust spring carries a <b>13 % higher fatigue range
-         (587 vs 521 N/mm²)</b>. This is consistent with the higher preload and reflects the
-         harsher thermal and pressure environment of the exhaust side:<br/><br/>
-         &bull; <b>Exhaust valves</b> are exposed to residual combustion gases during the overlap
-         period, and exhaust-side combustion pressure acts against the valve in early exhaust
-         stroke. A higher seat load ensures positive valve closure despite back-pressure.<br/>
-         &bull; <b>Intake valves</b> benefit from lower back-pressure — only intake-manifold
-         vacuum assists closure — so a lower seat load is sufficient while keeping fatigue stress
-         range within limits.<br/><br/>
+         springs (verified identity: τ_k1 + τ_kh = τ_k2 = 1 040 N/mm² for both springs).
+         Contrary to initial intuition, the <b>intake spring carries the higher stress range
+         (621 vs 587 N/mm², +5.8 %)</b>. This is a direct arithmetic consequence of the lower
+         seat load: because the intake spring starts each lift event at a lower torsional stress
+         (419 vs 453 N/mm²) but reaches the identical peak (1 040 N/mm²), it must swing through
+         a larger amplitude every cycle.<br/><br/>
+         &bull; <b>Exhaust spring:</b> higher mean stress (453 N/mm² at seat), smaller stress
+         range (587 N/mm²). On a Goodman diagram the higher mean stress shifts the operating
+         point toward the UTS intercept, demanding a material with good creep resistance at
+         elevated temperature — met by VD SiCrNiV SC + shot-peening.<br/>
+         &bull; <b>Intake spring:</b> lower mean stress (419 N/mm²), larger stress amplitude
+         (621 N/mm²). The greater cyclic excursion is the governing fatigue driver; the lower
+         mean stress partially offsets this on the Goodman line.<br/><br/>
          Both springs share the same peak stress at full lift (τ_k2 = 1 040 N/mm²), confirming
          the valvetrain is dimensioned to the same maximum stress level; it is only the
          <i>starting point</i> of each load cycle that differs."""),
@@ -454,8 +494,9 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
     conclusion_items = [
         ("<b>Near-identical springs, one key difference:</b>",
          "The exhaust spring is the same part as the intake spring except for a 0.9 mm longer "
-         "free length, which raises the seat load by 20 N (8 %) and the fatigue stress range "
-         "by 66 N/mm² (13 %)."),
+         "free length, which raises the seat load by 20 N (8 %). The intake spring, starting "
+         "from a lower seat load but reaching the same peak force, carries a 5.8 % higher "
+         "fatigue stress range (621 vs 587 N/mm²)."),
         ("<b>Same peak force at full lift (620 N):</b>",
          "Both springs are designed to deliver the same maximum force at full valve lift. This "
          "ensures the valvetrain cam/follower system, designed to a single peak force level, "
@@ -468,11 +509,12 @@ def build_report(output="ValveSpring_Drawing_Comparison.pdf"):
          "Paradoxically, the softer (lower-preload) intake spring shows a 5.7 % higher average "
          "working rate (37.0 vs 35.0 N/mm) over the valve lift event, because it must "
          "traverse the same force range from a lower starting point."),
-        ("<b>Fatigue dimensioning is consistent:</b>",
-         "Both springs share the same peak torsional stress at full lift (1 040 N/mm²), "
-         "confirming unified fatigue dimensioning. The exhaust spring operates at a higher mean "
-         "stress, which in a Goodman diagram reduces its fatigue allowance; the "
-         "VD SiCrNiV SC material and shot-peening are chosen to accommodate this."),
+        ("<b>Fatigue dimensioning: intake swing is larger:</b>",
+         "Both springs share the same peak torsional stress at full lift (1 040 N/mm²). "
+         "Because the intake spring starts each cycle from a lower seat stress (419 vs "
+         "453 N/mm²), it traverses a larger stress amplitude (621 vs 587 N/mm²). The exhaust "
+         "spring compensates with a higher mean stress level — both trade-offs are addressed "
+         "by the VD SiCrNiV SC material and shot-peening process."),
         ("<b>Colour coding is critical for correct assembly:</b>",
          "The brown vs yellow second stripe is the only visual distinction between the springs. "
          "Swapping them would install too-high preload on intake and too-low on exhaust — "
