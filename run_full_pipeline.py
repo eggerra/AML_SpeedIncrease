@@ -127,10 +127,10 @@ def update_readme_results(rf_txt):
                     return f0 + t * (f1 - f0)
             return data[-1][1] if data else None
 
-        S_PRE  = 10.0
-        S_K1   = S_PRE + 4.0    # 14.0 mm
-        S_K2   = S_PRE + 7.5    # 17.5 mm
-        S_FULL = 20.0
+        S_PRE  = 11.33
+        S_K1   = S_PRE + 4.0    # 15.33 mm
+        S_K2   = S_PRE + 7.5    # 18.83 mm
+        S_FULL = 21.33
 
         f_pre  = interp(S_PRE)
         f_k1   = interp(S_K1)
@@ -142,19 +142,24 @@ def update_readme_results(rf_txt):
             return
 
         run_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        # Analytical targets with new 280N preload (k1=22.6, k2=23.8, k3=26.7 N/mm)
+        f_ana_pre  = 280.0
+        f_ana_k1   = 280 + 22.6 * 4.0
+        f_ana_k2   = 280 + 22.6 * 5.2 + 23.8 * (7.5 - 5.2)
+        f_ana_full = 280 + 22.6 * 5.2 + 23.8 * 2.8 + 26.7 * 2.0
         result_block = (
-            f"**Abaqus/Standard results ({run_date}, L0=46.1 mm, "
+            f"**Abaqus/Standard results ({run_date}, L0=47.43 mm, "
             f"Abaqus CAE 0.5mm C3D4, 14 threads):**\n\n"
-            f"| Quantity | Analytical (3-phase) | **FEA** | Measurement | FEA error |\n"
-            f"|----------|---------------------|---------|-------------|-----------|\n"
-            f"| F @ preload  (s={S_PRE} mm) | 250 N | **{f_pre:.0f} N** | 249 N "
-            f"| {(f_pre/249-1)*100:+.1f}% |\n"
-            f"| F @ kink1    (lift=4.0 mm)  | {250+23.64*4.0:.0f} N | **{f_k1:.0f} N** | ~345 N "
-            f"| {(f_k1/345-1)*100:+.1f}% |\n"
-            f"| F @ kink2    (lift=7.5 mm)  | {250+23.64*4+24.89*3.5:.0f} N | **{f_k2:.0f} N** | ~432 N "
-            f"| {(f_k2/432-1)*100:+.1f}% |\n"
-            f"| F @ full lift (s={S_FULL} mm) | 621 N | **{f_full:.0f} N** | 620.7 N "
-            f"| {(f_full/620.7-1)*100:+.1f}% |"
+            f"| Quantity | Analytical (3-phase) | **FEA** | Target | FEA error |\n"
+            f"|----------|---------------------|---------|--------|-----------|\n"
+            f"| F @ preload  (s={S_PRE:.2f} mm) | {f_ana_pre:.0f} N | **{f_pre:.0f} N** | 280 N "
+            f"| {(f_pre/280-1)*100:+.1f}% |\n"
+            f"| F @ kink1    (lift=4.0 mm)  | {f_ana_k1:.0f} N | **{f_k1:.0f} N** | ~{f_ana_k1:.0f} N "
+            f"| {(f_k1/f_ana_k1-1)*100:+.1f}% |\n"
+            f"| F @ kink2    (lift=7.5 mm)  | {f_ana_k2:.0f} N | **{f_k2:.0f} N** | ~{f_ana_k2:.0f} N "
+            f"| {(f_k2/f_ana_k2-1)*100:+.1f}% |\n"
+            f"| F @ full lift (s={S_FULL:.2f} mm) | {f_ana_full:.0f} N | **{f_full:.0f} N** | ~{f_ana_full:.0f} N "
+            f"| {(f_full/f_ana_full-1)*100:+.1f}% |"
         )
 
         readme = os.path.join(BASE, "README.md")
@@ -184,10 +189,10 @@ with open(SIM_LOG, "w", encoding="utf-8") as f:
         f"**Run started:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
         f"**Job:** {ABQ_JOB}\n\n"
         f"## Change applied\n"
-        f"- Mesh: 0.5mm → **0.25mm** global seed (factor-2 refinement)\n"
-        f"- Contact: EXPONENTIAL → **HARD PENALTY** (STABILIZE=0.0001)\n"
-        f"- L0=46.1mm, L_installed=36.1mm, E=186000MPa, D_pitch=0.18 (unchanged)\n"
-        f"- Reference (0.5mm hard): F(10mm)=262N, F(20mm)=671N\n\n"
+        f"- **Free length increased**: L0=46.1mm → **L0=47.43mm** (+1.33mm)\n"
+        f"- **Preload target**: 250N → **280N**  (ΔF=30N, k≈22.6N/mm, ΔL0=1.33mm)\n"
+        f"- L_installed=36.1mm (unchanged), E=177500MPa, D_pitch=0.15 (unchanged)\n"
+        f"- New s_preload=11.33mm (was 10.0mm), s_full_lift=21.33mm (was 20.0mm)\n\n"
         f"## Progress\n"
     )
 
@@ -208,7 +213,7 @@ else:
     run(
         [FREECAD, os.path.join(BASE, "generate_spring.py")],
         env={"SPRING_PROFILE": "oval"},
-        desc="Generate oval STEP (n_closed=1.25, L0=46.1, D_pitch=0.0629)",
+        desc="Generate oval STEP (n_closed=1.25, L0=47.43, D_pitch=0.15)",
     )
     if not os.path.isfile(OVAL_STEP):
         update_log("CAD generation", "FAILED — STEP file not created")
@@ -242,7 +247,7 @@ else:
             "SPRING_MESH_INP": ABQ_MESH,
             "SPRING_JOB":      OVAL_JOB,
             "SPRING_PLOT":     os.path.join(BASE, "spring_FvL_ccx.png"),
-            "SPRING_L0":       "46.1",
+            "SPRING_L0":       "47.43",
             "SPRING_WIRE_A":   "2.92",
             "NO_CCX":          "1",
         },
@@ -368,12 +373,12 @@ files_to_stage = [
 ]
 subprocess.run(["git", "-C", BASE, "add"] + files_to_stage, check=False)
 commit_msg = (
-    "feat: 0.25mm refined mesh, hard PENALTY contact, 8-page FEA report\n\n"
-    "- Mesh: Abaqus CAE 0.5mm -> 0.25mm global seed (factor-2 refinement)\n"
-    "- Contact: soft EXPO -> hard PENALTY (STABILIZE=0.0001, ALLSD<5% ALLWK)\n"
-    "- Results: F(preload)=262N, F(full lift)=671N (0.5mm hard)\n"
-    "- Report: PDF with F-L comparison (meas vs soft/hard 0.5mm vs hard 0.25mm),\n"
-    "  progressive rate, Haigh diagram, mesh convergence table\n\n"
+    "feat: increase preload 250N -> 280N (L0 46.1mm -> 47.43mm, +1.33mm)\n\n"
+    "- generate_spring.py: L0=46.1mm -> 47.43mm (+1.33mm, ΔF=30N/k=22.6N/mm)\n"
+    "- spring_analysis.py: SPRING_L0 default 46.1->47.43, F_PRELOAD 250->280N\n"
+    "- run_abaqus.py: L0 46.1->47.43, F_PRELOAD 250->280N\n"
+    "- run_full_pipeline.py: SPRING_L0 46.1->47.43, s_preload 10->11.33mm\n"
+    "- New s_preload=11.33mm, s_full_lift=21.33mm (valve lift=10mm unchanged)\n\n"
     "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 )
 subprocess.run(["git", "-C", BASE, "commit", "-m", commit_msg], check=False)

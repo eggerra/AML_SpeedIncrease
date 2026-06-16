@@ -37,11 +37,11 @@ CPUS_DEFAULT = 14
 # ── Spring parameters (drawing values, oval wire, n_closed=1.25) ──
 # L0=46.1 mm drawing value; wire_a=2.92 mm used for coil pitch (no oval inflation).
 # s_preload=10.0 mm (46.1->36.1), s_full_lift=20.0 mm (46.1->26.1).
-L0          = 46.1     # free length [mm]  (drawing value)
-L_INSTALLED = 36.1     # installed length [mm]  (drawing value)
+L0          = 47.43    # free length [mm]  (drawing 46.1mm + 1.33mm for 280N preload)
+L_INSTALLED = 36.1     # installed length [mm]  (fixed by engine)
 VALVE_LIFT  = 10.0
 L_FULL_LIFT = 26.1     # spring length at full valve lift [mm]
-F_PRELOAD   = 250.0    # preload force [N]  (drawing: 249 N)
+F_PRELOAD   = 280.0    # preload force target [N]  (raised from 250N)
 F_FULL_LIFT = 620.7    # force at full lift [N]  (measurement)
 S_PRELOAD   = L0 - L_INSTALLED    # 10.0 mm
 S_FULL_LIFT = L0 - L_FULL_LIFT    # 20.0 mm

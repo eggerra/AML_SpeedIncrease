@@ -10,14 +10,15 @@ Pitch is NON-UNIFORM (progressive):
 
 Bottom coils (large OD, softer) bind first as the spring is compressed.
 The remaining active coils are the stiffer small-OD top coils, producing an
-increasing spring rate (progressive behaviour) consistent with F1=250N / F2=620N.
+increasing spring rate (progressive behaviour) consistent with F1=280N / F2=~518N.
 
-Geometry (2026-06-14) — drawing free length L0=46.1 mm, n_closed=1.25:
-  L0=46.1 mm is the drawing value (previously calibrated to 38.717 mm).
-  With n_closed=1.25: n_active=6.1, h_active=38.8 mm, pitch_mean=6.361 mm.
-  D_pitch=0.0629 places kink1 at lift=4.05 mm from L1 (s_bind=18.55 mm):
-    s_preload = 46.1-31.6 = 14.5 mm  ->  s_bind = 14.5+4.05 = 18.55 mm
-    D_pitch = 1 - (18.55 + 6.1*2.92)/38.8 = 0.0629  ✓
+Geometry (2026-06-16) — free length L0=47.43 mm (increased from drawing 46.1 mm):
+  L0=47.43 mm: increased by +1.33 mm from drawing 46.1 mm to raise preload from
+  250 N to 280 N at installed length 36.1 mm (k≈22.6 N/mm, ΔF=30 N).
+  With n_closed=1.25: n_active=6.1, h_active=40.13 mm, pitch_mean=6.578 mm.
+  D_pitch=0.15 places kink1 at lift≈4.97 mm from L1=36.1 mm (s_bind=16.30 mm):
+    s_preload = 47.43-36.1 = 11.33 mm  ->  s_bind = 16.30 mm
+    D_pitch = 1 - (16.30 + 6.1*2.92)/40.13 = 0.15  ✓
   Wire cross-section and coil diameters unchanged from drawing.
 """
 import math
@@ -33,7 +34,7 @@ Di_top     = 12.00   # inner diameter top [mm]
 grind_z    = 0.75    # ground end cut depth [mm]
 
 # -- Drawing parameters (free length + closed coils) ---------------------------
-L0         = 46.1    # free length [mm]   (drawing value)
+L0         = 47.43   # free length [mm]   (drawing 46.1mm + 1.33mm for 280N preload)
 n_closed   = 1.25    # closed coils per end (drawing value)
 
 R_mean_bot = Di_bot / 2 + wire_r / 2   # = 9.78 mm

@@ -2,10 +2,10 @@
 spring_analysis.py  -  Valve spring FEA: Preload + Valve Lift  (2-step, self-contact)
 
 Operating conditions (INT_Spring_measurement.txt):
-  Step 1 - Assembly preload : compress free length 46.1 mm -> installed 31.6 mm
-                               compression s1 = 14.5 mm,  F_preload = 249 N
-  Step 2 - Valve lift       : additional 10 mm compression (31.6 -> 21.6 mm)
-                               total compression s2 = 24.5 mm,  F_max = 620 N
+  Step 1 - Assembly preload : compress free length 47.43 mm -> installed 36.1 mm
+                               compression s1 = 11.33 mm,  F_preload = 280 N  (target)
+  Step 2 - Valve lift       : additional 10 mm compression (36.1 -> 26.1 mm)
+                               total compression s2 = 21.33 mm,  F_max ≈ 518 N  (analytical)
 
 Reads ValveSpring_mesh.inp (exported by mesh_spring.py),
 identifies top/bottom face nodes, writes a 2-step CalculiX input file with
@@ -38,7 +38,7 @@ CCX_CANDIDATES = [
 # -- Spring geometry (drawing values) -----------------------------------------
 # n_closed=1.25, L0=46.1 mm are drawing values; n_active=6.1.
 # Oval pipeline overrides L0 via SPRING_L0 env var (L0_oval=46.565 mm).
-L0      = float(os.environ.get("SPRING_L0", "46.1"))    # free length [mm]
+L0      = float(os.environ.get("SPRING_L0", "47.43"))   # free length [mm]
 grind_z = 0.75
 Z_BOT   = grind_z           # 0.75 mm
 Z_TOP   = L0 - grind_z
@@ -58,7 +58,7 @@ Z_CONTACT_TOP = Z_TOP - 0.5                # just below top face; includes top c
 
 # -- Operating conditions (from INT_Spring_measurement.txt) --------------------
 L_INSTALLED = 36.1    # installed / preload length [mm]  (measurement start L1)
-F_PRELOAD   = 250.0   # preload force at installed length [N]
+F_PRELOAD   = 280.0   # preload force target [N]  (raised from 250N via L0 +1.33mm)
 VALVE_LIFT  = 10.0    # valve lift stroke [mm]
 L_FULL_LIFT = L_INSTALLED - VALVE_LIFT  # 21.6 mm  (spring length at full lift)
 F_FULL_LIFT = 620.7   # spring force at full valve lift [N]
