@@ -1,7 +1,7 @@
 """
 Abaqus CAE noGUI script — mesh ValveSpring_oval.step at 0.5 mm global size.
 Run as: abaqus cae noGUI=mesh_abaqus_hpc.py
-Output: ValveSpring_abq_mesh.inp (orphan mesh, C3D10)
+Output: ValveSpring_abq_mesh.inp (orphan mesh, C3D4)
 """
 from abaqus import *
 from abaqusConstants import *
@@ -12,7 +12,7 @@ import sys, os
 STEP_FILE   = os.environ.get('SPRING_STEP_FILE',
                               os.path.join(os.getcwd(), 'ValveSpring_oval.step'))
 JOB_NAME    = os.environ.get('SPRING_MESH_JOB', 'ValveSpring_abq_mesh')
-GLOBAL_SIZE = 0.25
+GLOBAL_SIZE = 0.5
 
 print('=== Abaqus CAE mesh script ===')
 print('STEP : ' + STEP_FILE)
@@ -40,7 +40,7 @@ if n_cells == 0:
     print('ERROR: no solid cells in imported geometry')
     sys.exit(1)
 
-# Assign quadratic tet element type (C3D10)
+# Assign tet mesh controls and element type (C3D10 preferred; C3D4 fallback)
 p.setMeshControls(regions=p.cells, elemShape=TET, technique=FREE)
 p.setElementType(
     regions=(p.cells,),
@@ -77,13 +77,10 @@ else:
     elem_type = 'C3D' + str(conn_len)
 print('Elem type: ' + elem_type + ' (' + str(conn_len) + ' nodes/elem)')
 
-# Renumber nodes 1..N and elements 1..M — avoids any 0-based label ambiguity.
-# elem.connectivity returns node labels (per Abaqus docs), but some versions
-# return 0-based indices; rebuilding from scratch is safest.
+# Renumber nodes 1..N and elements 1..M
 nodes_list = list(p.nodes)
 elems_list = list(p.elements)
 
-# Map original node object -> sequential label 1..N
 node_new_label = {}
 for i, nd in enumerate(nodes_list):
     node_new_label[nd.label] = i + 1
@@ -96,8 +93,6 @@ with open(out_path, 'w') as f:
         f.write('%d, %.6f, %.6f, %.6f\n' % (i + 1, c[0], c[1], c[2]))
     f.write('*ELEMENT, TYPE=' + elem_type + ', ELSET=Evolumes\n')
     for i, elem in enumerate(elems_list):
-        # connectivity holds 0-based positional indices into p.nodes;
-        # our renumbering assigns new label = index + 1
         conn = ', '.join(str(n + 1) for n in elem.connectivity)
         f.write('%d, %s\n' % (i + 1, conn))
 print('Written  : ' + out_path)
