@@ -1,6 +1,6 @@
 # Preload Sweep Log
 
-**Run started:** 2026-06-16 16:44:04
+**Run started:** 2026-06-16 21:01:30
 **Cases:** 250 N / 265 N / 280 N  (n_closed=0.8, n_active=7.0, Z-morphed C3D4 mesh)
 
 ## Targets
@@ -12,81 +12,22 @@
 
 ## Progress
 
-## 2026-06-16 16:44:04  —  Case 250N START — L0=47.58 mm, n_closed=0.8, s_pre=11.48 mm
+## 2026-06-16 21:01:30  —  Case 250N START — L0=47.58 mm, n_closed=0.8, s_pre=11.48 mm
 
-## 2026-06-16 16:44:04  —  Case 250N — CAD generation RUNNING
+## 2026-06-16 21:01:30  —  Case 250N — CAD generation RUNNING
 
-## 2026-06-16 16:44:18  —  Case 250N — CAD DONE  (3295 kB)
+## 2026-06-16 21:01:45  —  Case 250N — CAD DONE  (3295 kB)
 
-## 2026-06-16 16:44:18  —  Case 250N — Mesh ready  (10755 kB)
+## 2026-06-16 21:01:45  —  Case 250N — Mesh ready  (10755 kB)
 
-## 2026-06-16 16:44:18  —  Case 250N — Writing FEA INP
+## 2026-06-16 21:01:45  —  Case 250N — Writing FEA INP
 
-## 2026-06-16 16:44:20  —  Case 250N — INP DONE  (486 kB)
+## 2026-06-16 21:01:47  —  Case 250N — INP DONE  (486 kB)
 
-## 2026-06-16 16:44:20  —  Case 250N — Abaqus solve RUNNING (14 CPUs)
-
-## 2026-06-16 16:54:21  —  Case 250N — RUNNING 0.2h — Step 1 Inc 9  total=2.00s  step=2.00mm
-
-## 2026-06-16 17:04:30  —  Case 250N — RUNNING 0.3h — Step 1 Inc 21  total=2.00s  step=2.00mm
-
-## 2026-06-16 17:14:40  —  Case 250N — RUNNING 0.5h — Step 2 Inc 7  total=2.00s  step=2.00mm
-
-## 2026-06-16 17:24:51  —  Case 250N — RUNNING 0.7h — Step 2 Inc 13  total=0.00s  step=5.00mm
-
-## 2026-06-16 17:35:05  —  Case 250N — RUNNING 0.8h — Step 2 Inc 18  total=0.00s  step=4.00mm
-
-## 2026-06-16 17:45:18  —  Case 250N — RUNNING 1.0h — Step 2 Inc 23  total=2.00s  step=8.00mm
-
-## 2026-06-16 17:55:27  —  Case 250N — RUNNING 1.2h — Step 2 Inc 30  total=0.00s  step=6.00mm
-
-## 2026-06-16 18:05:37  —  Case 250N — RUNNING 1.4h — Step 2 Inc 32  total=1.00s  step=2.00mm
-
-## 2026-06-16 18:15:46  —  Case 250N — RUNNING 1.5h — Step 2 Inc 36  total=3.00s  step=10.00mm
-
-## 2026-06-16 18:26:01  —  Case 250N — RUNNING 1.7h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 18:36:08  —  Case 250N — RUNNING 1.9h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 18:46:15  —  Case 250N — RUNNING 2.0h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 18:56:22  —  Case 250N — RUNNING 2.2h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 19:06:29  —  Case 250N — RUNNING 2.4h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 19:16:37  —  Case 250N — RUNNING 2.5h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 19:26:44  —  Case 250N — RUNNING 2.7h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 19:36:52  —  Case 250N — RUNNING 2.9h — Step 2 Inc 39  total=3.00s  step=10.00mm
-
-## 2026-06-16 19:45:29  —  Case 250N — COMPLETED  F=65-794 N  wall=3.0h
-
-## 2026-06-16 19:45:35  —  Case 265N START — L0=48.26 mm, n_closed=0.8, s_pre=12.16 mm
-
-## 2026-06-16 19:45:35  —  Case 265N — CAD generation RUNNING
-
-## 2026-06-16 19:45:55  —  Case 265N — CAD DONE  (3293 kB)
-
-## 2026-06-16 19:45:55  —  Case 265N — Mesh ready  (10756 kB)
-
-## 2026-06-16 19:45:55  —  Case 265N — Writing FEA INP
-
-## 2026-06-16 19:45:58  —  Case 265N — INP DONE  (486 kB)
-
-## 2026-06-16 19:45:58  —  Case 265N — Abaqus solve RUNNING (14 CPUs)
+## 2026-06-16 21:01:47  —  Case 250N — Abaqus solve RUNNING (14 CPUs)
 
 ---
-### 2026-06-16 20:50
-
-**Local job** (`ValveSpring_oval_contact_abaqus`) — FINISHED/STOPPED
-  - Local (Win, 14 CPU): Step 2 (valve lift), Inc 49, step time 10.00/10.0 mm (100%)
-
-**HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
-  - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
-
----
-### 2026-06-16 20:58
+### 2026-06-16 21:02
 
 **Local job** (`ValveSpring_oval_contact_abaqus`) — FINISHED/STOPPED
   - Local (Win, 14 CPU): Step 2 (valve lift), Inc 49, step time 10.00/10.0 mm (100%)
