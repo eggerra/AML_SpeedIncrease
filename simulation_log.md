@@ -206,3 +206,26 @@
 ## 2026-06-17 01:27:29  —  Case 265N — RUNNING 0.5h — Step 2 Inc 45  total=3.00s  step=5.00mm
 
 ## 2026-06-17 01:29:37  —  Case 265N — COMPLETED  F=67-887 N  wall=0.5h
+
+## 2026-06-17 01:29:43  —  Case 280N START — L0=48.95 mm, n_closed=0.8, s_pre=12.85 mm
+
+## 2026-06-17 01:29:43  —  Case 280N — CAD generation RUNNING
+
+## 2026-06-17 01:29:59  —  Case 280N — CAD DONE  (3307 kB)
+
+## 2026-06-17 01:29:59  —  Case 280N — Mesh ready  (10756 kB)
+
+## 2026-06-17 01:29:59  —  Case 280N — Writing FEA INP
+
+## 2026-06-17 01:30:01  —  Case 280N — INP DONE  (486 kB)
+
+## 2026-06-17 01:30:01  —  Case 280N — Abaqus solve RUNNING (14 CPUs)
+
+---
+### 2026-06-17 01:30
+
+**Local job** (`ValveSpring_oval_contact_abaqus`) — RUNNING
+  - Local (Win, 14 CPU): Step 2 (valve lift), Inc 49, step time 10.00/10.0 mm (100%)
+
+**HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
+  - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
