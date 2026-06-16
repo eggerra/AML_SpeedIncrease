@@ -1,189 +1,30 @@
 # Simulation Run Log — ValveSpring_oval_contact_abaqus
 
-**Run started:** 2026-06-16 01:07:37
+**Run started:** 2026-06-16 09:26:50
 **Job:** ValveSpring_oval_contact_abaqus
 
 ## Change applied
-- Mesh: 0.5mm → **0.25mm** global seed (factor-2 refinement)
-- Contact: EXPONENTIAL → **HARD PENALTY** (STABILIZE=0.0001)
-- L0=46.1mm, L_installed=36.1mm, E=186000MPa, D_pitch=0.18 (unchanged)
-- Reference (0.5mm hard): F(10mm)=262N, F(20mm)=671N
+- **Free length increased**: L0=46.1mm → **L0=47.43mm** (+1.33mm)
+- **Preload target**: 250N → **280N**  (ΔF=30N, k≈22.6N/mm, ΔL0=1.33mm)
+- L_installed=36.1mm (unchanged), E=177500MPa, D_pitch=0.15 (unchanged)
+- New s_preload=11.33mm (was 10.0mm), s_full_lift=21.33mm (was 20.0mm)
 
 ## Progress
 
-## 2026-06-16 01:07:37  —  CAD generation
+## 2026-06-16 09:26:50  —  CAD generation
 **Status:** RUNNING
 
-## 2026-06-16 01:07:53  —  CAD generation
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval.step (2943 kB)
+## 2026-06-16 09:27:10  —  CAD generation
+**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval.step (2956 kB)
 
-## 2026-06-16 01:07:53  —  Meshing
+## 2026-06-16 09:27:10  —  Meshing
 **Status:** RUNNING — Abaqus CAE noGUI 0.5 mm (may take 5-15 min)
 
 ---
-### 2026-06-16 01:08
+### 2026-06-16 09:27
 
 **Local job** (`ValveSpring_oval_contact_abaqus`) — FINISHED/STOPPED
   - Local (Win, 14 CPU): Step 2 (valve lift), Inc 39, step time 10.00/10.0 mm (100%)
 
 **HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
   - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
-
-## 2026-06-16 01:09:28  —  Meshing
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_abq_mesh.inp (10 MB)
-
-## 2026-06-16 01:09:28  —  FEA input
-**Status:** RUNNING — writing Abaqus/CalculiX INP
-
-## 2026-06-16 01:09:31  —  FEA input
-**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact.inp (474 kB)
-
-## 2026-06-16 01:09:31  —  Abaqus solve
-**Status:** RUNNING — this typically takes 10-20 hours
-
-## 2026-06-16 01:19:31  —  Abaqus solve
-**Status:** RUNNING — 0.2 h elapsed — Step 2 Inc 16  total=2.00 s  step=21.00 mm
-
-## 2026-06-16 01:29:38  —  Abaqus solve
-**Status:** RUNNING — 0.3 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 01:39:45  —  Abaqus solve
-**Status:** RUNNING — 0.5 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 01:49:51  —  Abaqus solve
-**Status:** RUNNING — 0.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 01:59:58  —  Abaqus solve
-**Status:** RUNNING — 0.8 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 02:10:04  —  Abaqus solve
-**Status:** RUNNING — 1.0 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 02:20:11  —  Abaqus solve
-**Status:** RUNNING — 1.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 02:30:18  —  Abaqus solve
-**Status:** RUNNING — 1.3 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 02:40:25  —  Abaqus solve
-**Status:** RUNNING — 1.5 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 02:50:31  —  Abaqus solve
-**Status:** RUNNING — 1.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:00:37  —  Abaqus solve
-**Status:** RUNNING — 1.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:10:44  —  Abaqus solve
-**Status:** RUNNING — 2.0 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:20:50  —  Abaqus solve
-**Status:** RUNNING — 2.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:30:56  —  Abaqus solve
-**Status:** RUNNING — 2.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:41:02  —  Abaqus solve
-**Status:** RUNNING — 2.5 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 03:51:08  —  Abaqus solve
-**Status:** RUNNING — 2.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:01:16  —  Abaqus solve
-**Status:** RUNNING — 2.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:11:23  —  Abaqus solve
-**Status:** RUNNING — 3.0 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:21:30  —  Abaqus solve
-**Status:** RUNNING — 3.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:31:37  —  Abaqus solve
-**Status:** RUNNING — 3.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:41:43  —  Abaqus solve
-**Status:** RUNNING — 3.5 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 04:51:50  —  Abaqus solve
-**Status:** RUNNING — 3.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:01:56  —  Abaqus solve
-**Status:** RUNNING — 3.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:12:03  —  Abaqus solve
-**Status:** RUNNING — 4.0 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:22:10  —  Abaqus solve
-**Status:** RUNNING — 4.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:32:16  —  Abaqus solve
-**Status:** RUNNING — 4.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:42:23  —  Abaqus solve
-**Status:** RUNNING — 4.5 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 05:52:29  —  Abaqus solve
-**Status:** RUNNING — 4.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:02:35  —  Abaqus solve
-**Status:** RUNNING — 4.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:12:42  —  Abaqus solve
-**Status:** RUNNING — 5.1 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:22:48  —  Abaqus solve
-**Status:** RUNNING — 5.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:32:56  —  Abaqus solve
-**Status:** RUNNING — 5.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:43:02  —  Abaqus solve
-**Status:** RUNNING — 5.6 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 06:53:09  —  Abaqus solve
-**Status:** RUNNING — 5.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:03:15  —  Abaqus solve
-**Status:** RUNNING — 5.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:13:22  —  Abaqus solve
-**Status:** RUNNING — 6.1 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:23:29  —  Abaqus solve
-**Status:** RUNNING — 6.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:33:35  —  Abaqus solve
-**Status:** RUNNING — 6.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:43:42  —  Abaqus solve
-**Status:** RUNNING — 6.6 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 07:53:50  —  Abaqus solve
-**Status:** RUNNING — 6.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:03:56  —  Abaqus solve
-**Status:** RUNNING — 6.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:14:03  —  Abaqus solve
-**Status:** RUNNING — 7.1 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:24:11  —  Abaqus solve
-**Status:** RUNNING — 7.2 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:34:17  —  Abaqus solve
-**Status:** RUNNING — 7.4 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:44:24  —  Abaqus solve
-**Status:** RUNNING — 7.6 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 08:54:30  —  Abaqus solve
-**Status:** RUNNING — 7.7 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 09:04:36  —  Abaqus solve
-**Status:** RUNNING — 7.9 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 09:14:44  —  Abaqus solve
-**Status:** RUNNING — 8.1 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
-
-## 2026-06-16 09:24:51  —  Abaqus solve
-**Status:** RUNNING — 8.3 h elapsed — Step 2 Inc 39  total=2.00 s  step=2.00 mm
