@@ -247,3 +247,12 @@
 
 ## 2026-06-16 11:47:42  —  Abaqus solve
 **Status:** RUNNING — 10.6 h elapsed — Step 2 Inc 27  total=3.00 s  step=6.00 mm
+
+---
+### 2026-06-16 11:51
+
+**Local job** (`ValveSpring_oval_contact_abaqus`) — RUNNING
+  - Local (Win, 14 CPU): Step 2 (valve lift), Inc 27, step time 6.79/10.0 mm (68%)
+
+**HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
+  - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
