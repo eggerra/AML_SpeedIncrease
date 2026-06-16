@@ -146,3 +146,5 @@
   - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
 
 ## 2026-06-17 00:54:12  —  Case 250N — RUNNING 3.9h — Step 2 Inc 39  total=3.00s  step=10.00mm
+
+## 2026-06-17 00:56:48  —  Case 250N — COMPLETED  F=65-794 N  wall=3.9h
