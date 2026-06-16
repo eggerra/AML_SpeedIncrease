@@ -83,3 +83,12 @@
 ## 2026-06-16 23:25:58  —  Case 280N — RUNNING 0.3h — Step 2 Inc 47  total=1.00s  step=4.00mm
 
 ## 2026-06-16 23:28:34  —  Case 280N — COMPLETED  F=69-1001 N  wall=0.4h
+
+## 2026-06-16 23:28:43  —  Sweep COMPLETE — comparison plot written
+
+## Results Summary
+| Case | L0 [mm] | F_preload [N] | F_full [N] | Target [N] | Error |
+|------|---------|--------------|-----------|-----------|-------|
+| 250N | 47.58 | 322 | 792 | ~617 | +28.4% |
+| 265N | 48.26 | 354 | 880 | ~632 | +39.2% |
+| 280N | 48.95 | 389 | 991 | ~647 | +53.2% |

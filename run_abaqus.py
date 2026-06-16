@@ -352,7 +352,7 @@ def plot(lifts, forces, meas_s, meas_force):
     plt.tight_layout()
     plt.savefig(PLOT_FILE, dpi=150)
     print(f"  Plot saved: {PLOT_FILE}")
-    plt.show()
+    plt.close()
 
 
 # =============================================================================
