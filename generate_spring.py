@@ -12,18 +12,15 @@ Bottom coils (large OD, softer) bind first as the spring is compressed.
 The remaining active coils are the stiffer small-OD top coils, producing an
 increasing spring rate (progressive behaviour) consistent with F1=280N / F2=~518N.
 
-Geometry (2026-06-16) — free length L0=47.43 mm (increased from drawing 46.1 mm):
-  L0=47.43 mm: increased by +1.33 mm from drawing 46.1 mm to raise preload from
-  250 N to 280 N at installed length 36.1 mm (k≈22.6 N/mm, ΔF=30 N).
-  With n_closed=1.25: n_active=6.1, h_active=40.13 mm, pitch_mean=6.578 mm.
-  D_pitch=0.15 places kink1 at lift≈4.97 mm from L1=36.1 mm (s_bind=16.30 mm):
-    s_preload = 47.43-36.1 = 11.33 mm  ->  s_bind = 16.30 mm
-    D_pitch = 1 - (16.30 + 6.1*2.92)/40.13 = 0.15  ✓
+Geometry (2026-06-16) — parametric sweep: L0 and n_closed from env vars
+  Default values: n_closed=0.8 (n_active=7.0), L0=47.58mm (preload sweep base).
+  D_pitch computed dynamically to place kink1 at 5.2mm lift from L_installed=36.1mm.
   Wire cross-section and coil diameters unchanged from drawing.
 """
 import math
 import sys
 import numpy as _np
+import os
 
 # -- Drawing parameters (wire cross-section and diameters unchanged) -----------
 wire_a     = 2.92    # wire axial dimension (along spring axis) [mm]
@@ -34,8 +31,8 @@ Di_top     = 12.00   # inner diameter top [mm]
 grind_z    = 0.75    # ground end cut depth [mm]
 
 # -- Drawing parameters (free length + closed coils) ---------------------------
-L0         = 47.43   # free length [mm]   (drawing 46.1mm + 1.33mm for 280N preload)
-n_closed   = 1.25    # closed coils per end (drawing value)
+L0         = float(os.environ.get("SPRING_L0",       "47.58"))  # free length [mm]
+n_closed   = float(os.environ.get("SPRING_N_CLOSED", "0.8"))    # closed coils per end
 
 R_mean_bot = Di_bot / 2 + wire_r / 2   # = 9.78 mm
 R_mean_top = Di_top / 2 + wire_r / 2   # = 7.83 mm
@@ -53,7 +50,11 @@ pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
 #   -> D_pitch = 1 - (s_bind + n_active*wire_a)/h_active
 #             = 1 - (15.2 + 6.1*2.92)/38.8 = 0.1497 ≈ 0.15
 # D_pitch = 0.15  ->  p_bot = 5.407 mm (gap 2.487 mm), p_top = 7.315 mm (gap 4.395 mm)
-D_pitch    = 0.15
+# D_pitch: places kink1 at LIFT_KINK1=5.2mm lift from L_installed=36.1mm
+_L_INST   = 36.1
+_KINK1_MM = 5.2
+_s_bind   = (L0 - _L_INST) + _KINK1_MM
+D_pitch   = max(0.05, min(0.30, 1.0 - (_s_bind + n_active * wire_a) / h_active))
 
 p_bot  = pitch_mean * (1 - D_pitch)
 p_top  = pitch_mean * (1 + D_pitch)
@@ -308,16 +309,18 @@ spring_final = cut2.Shape()
 print("  Ends ground.")
 
 # -- Export STEP ---------------------------------------------------------------
-_step_name = ("ValveSpring_oval.step" if WIRE_PROFILE == "oval"
-              else "ValveSpring.step")
+_step_default = ("ValveSpring_oval.step" if WIRE_PROFILE == "oval"
+                 else "ValveSpring.step")
+_step_name = os.environ.get("SPRING_STEP_OUT", _step_default)
 writer = STEPControl_Writer()
 writer.Transfer(spring_final, STEPControl_AsIs)
 status = writer.Write(_step_name)
 print(f"Exported: {_step_name}  (status={status})")
 
 # -- Export STL ----------------------------------------------------------------
-_stl_name = ("ValveSpring_oval.stl" if WIRE_PROFILE == "oval"
-             else "ValveSpring.stl")
+_stl_default = ("ValveSpring_oval.stl" if WIRE_PROFILE == "oval"
+                else "ValveSpring.stl")
+_stl_name = os.environ.get("SPRING_STL_OUT", _stl_default)
 BRepMesh_IncrementalMesh(spring_final, 0.08, False, 0.5)
 stl_writer = StlAPI_Writer()
 stl_writer.Write(spring_final, _stl_name)

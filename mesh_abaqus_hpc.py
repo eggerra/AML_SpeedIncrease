@@ -9,8 +9,9 @@ from caeModules import *
 from mesh import ElemType
 import sys, os
 
-STEP_FILE   = os.path.join(os.getcwd(), 'ValveSpring_oval.step')
-JOB_NAME    = 'ValveSpring_abq_mesh'
+STEP_FILE   = os.environ.get('SPRING_STEP_FILE',
+                              os.path.join(os.getcwd(), 'ValveSpring_oval.step'))
+JOB_NAME    = os.environ.get('SPRING_MESH_JOB', 'ValveSpring_abq_mesh')
 GLOBAL_SIZE = 0.25
 
 print('=== Abaqus CAE mesh script ===')

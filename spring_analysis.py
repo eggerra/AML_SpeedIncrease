@@ -45,20 +45,22 @@ Z_TOP   = L0 - grind_z
 Z_TOL   = 0.40              # node selection tolerance [mm]
 
 # Contact surface: active coil zone only (exclude closed/ground end coils)
-N_CLOSED  = 1.25             # closed coils per end (drawing value; n_active=6.1)
-WIRE_A    = float(os.environ.get("SPRING_WIRE_A", "2.92"))
+N_CLOSED  = float(os.environ.get("SPRING_N_CLOSED", "0.8"))
+WIRE_A    = float(os.environ.get("SPRING_WIRE_A",   "2.92"))
 N_TOTAL   = 8.6
-N_ACTIVE  = N_TOTAL - 2 * N_CLOSED   # 6.1 active coils
+N_ACTIVE  = N_TOTAL - 2 * N_CLOSED
 H_CLOSED  = N_CLOSED * WIRE_A
 H_ACTIVE  = L0 - 2 * H_CLOSED
-D_PITCH   = 0.15                     # pitch gradient (must match generate_spring.py)
-pitch_mean = H_ACTIVE / N_ACTIVE     # mean active pitch [mm]
+# D_pitch matches generate_spring.py dynamic formula
+_s_bind_sa = (L0 - 36.1) + 5.2
+D_PITCH    = max(0.05, min(0.30, 1.0 - (_s_bind_sa + N_ACTIVE * WIRE_A) / H_ACTIVE))
+pitch_mean = H_ACTIVE / N_ACTIVE
 Z_CONTACT_BOT = grind_z + 0.5               # 1.25 mm — just above ground face; includes closed-end coils
 Z_CONTACT_TOP = Z_TOP - 0.5                # just below top face; includes top closed-end coils
 
 # -- Operating conditions (from INT_Spring_measurement.txt) --------------------
 L_INSTALLED = 36.1    # installed / preload length [mm]  (measurement start L1)
-F_PRELOAD   = 280.0   # preload force target [N]  (raised from 250N via L0 +1.33mm)
+F_PRELOAD   = float(os.environ.get("SPRING_F_PRELOAD", "250.0"))  # preload force [N]
 VALVE_LIFT  = 10.0    # valve lift stroke [mm]
 L_FULL_LIFT = L_INSTALLED - VALVE_LIFT  # 21.6 mm  (spring length at full lift)
 F_FULL_LIFT = 620.7   # spring force at full valve lift [N]

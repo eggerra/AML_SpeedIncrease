@@ -23,12 +23,12 @@ import matplotlib.pyplot as plt
 # ── Paths ──────────────────────────────────────────────────────────────────
 BASE        = r"D:\Projects_AI\AML_SpeedIncrease"
 ABAQUS      = r"N:\CAE\simulia\v2025FP2524\Commands\abaqus.bat"
-CCX_JOB     = "ValveSpring_oval_contact"
-ABQ_JOB     = "ValveSpring_oval_contact_abaqus"
+CCX_JOB     = os.environ.get("SPRING_CCX_JOB", "ValveSpring_oval_contact")
+ABQ_JOB     = os.environ.get("SPRING_ABQ_JOB", CCX_JOB + "_abaqus")
 CCX_INP     = os.path.join(BASE, CCX_JOB + ".inp")
 ABQ_INP     = os.path.join(BASE, ABQ_JOB + ".inp")
 RF_TXT      = os.path.join(BASE, ABQ_JOB + "_rf.txt")
-PLOT_FILE   = os.path.join(BASE, "spring_FvL_abaqus.png")
+PLOT_FILE   = os.path.join(BASE, os.environ.get("SPRING_PLOT", "spring_FvL_abaqus.png"))
 MEAS_FILE   = os.path.join(BASE, "INT_Spring_measurement.txt")
 POST_SCRIPT = os.path.join(BASE, "postprocess_abaqus.py")
 
@@ -37,11 +37,11 @@ CPUS_DEFAULT = 14
 # ── Spring parameters (drawing values, oval wire, n_closed=1.25) ──
 # L0=46.1 mm drawing value; wire_a=2.92 mm used for coil pitch (no oval inflation).
 # s_preload=10.0 mm (46.1->36.1), s_full_lift=20.0 mm (46.1->26.1).
-L0          = 47.43    # free length [mm]  (drawing 46.1mm + 1.33mm for 280N preload)
+L0          = float(os.environ.get("SPRING_L0",       "47.58"))  # free length [mm]
 L_INSTALLED = 36.1     # installed length [mm]  (fixed by engine)
 VALVE_LIFT  = 10.0
-L_FULL_LIFT = 26.1     # spring length at full valve lift [mm]
-F_PRELOAD   = 280.0    # preload force target [N]  (raised from 250N)
+L_FULL_LIFT = L_INSTALLED - VALVE_LIFT   # 26.1 mm
+F_PRELOAD   = float(os.environ.get("SPRING_F_PRELOAD","250.0"))  # preload force [N]
 F_FULL_LIFT = 620.7    # force at full lift [N]  (measurement)
 S_PRELOAD   = L0 - L_INSTALLED    # 10.0 mm
 S_FULL_LIFT = L0 - L_FULL_LIFT    # 20.0 mm
