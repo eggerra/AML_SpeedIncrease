@@ -33,3 +33,19 @@
 ## 2026-06-16 22:32:39  —  Case 250N — RUNNING 1.5h — Step 2 Inc 25  total=2.00s  step=3.00mm
 
 ## 2026-06-16 22:39:14  —  Case 250N — COMPLETED  F=65-794 N  wall=0.3h
+
+## 2026-06-16 22:39:21  —  Case 265N START — L0=48.26 mm, n_closed=0.8, s_pre=12.16 mm
+
+## 2026-06-16 22:39:21  —  Case 265N — CAD generation RUNNING
+
+## 2026-06-16 22:39:23  —  Case 265N — CAD DONE  (3293 kB)
+
+## 2026-06-16 22:39:23  —  Case 265N — Mesh ready  (10756 kB)
+
+## 2026-06-16 22:39:23  —  Case 265N — Writing FEA INP
+
+## 2026-06-16 22:39:25  —  Case 265N — INP DONE  (486 kB)
+
+## 2026-06-16 22:39:25  —  Case 265N — Abaqus solve RUNNING (14 CPUs)
+
+## 2026-06-16 22:42:46  —  Case 250N — RUNNING 1.7h — Step 2 Inc 39  total=3.00s  step=10.00mm
