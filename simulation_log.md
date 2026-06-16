@@ -28,3 +28,24 @@
 
 **HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
   - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
+
+## 2026-06-16 09:29:30  —  Meshing
+**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_abq_mesh.inp (10 MB)
+
+## 2026-06-16 09:29:30  —  FEA input
+**Status:** RUNNING — writing Abaqus/CalculiX INP
+
+## 2026-06-16 09:29:34  —  FEA input
+**Status:** DONE — D:\Projects_AI\AML_SpeedIncrease\ValveSpring_oval_contact.inp (492 kB)
+
+## 2026-06-16 09:29:34  —  Abaqus solve
+**Status:** RUNNING — this typically takes 10-20 hours
+
+---
+### 2026-06-16 09:30
+
+**Local job** (`ValveSpring_oval_contact_abaqus`) — RUNNING
+  - Local (Win, 14 CPU): no increment data yet
+
+**HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
+  - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
