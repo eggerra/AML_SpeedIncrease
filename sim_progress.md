@@ -1,15 +1,15 @@
 # EXCITE TD Simulation Progress
 
-**Updated:** 2026-06-17 20:44:30  
+**Updated:** 2026-06-17 20:54:28  
 **Model:** AML_AE26_ChainDrive__04_spring_update.etd  
 **Setup:** 15 cam cycles total, last 5 written (TIMS=0.16 s)
 
 | Speed | Cam angle | Progress | Rate | ETA |
 |-------|-----------|----------|------|-----|
-| 7500 rpm | 1864.8° / 5400° | 34.5% | 26.11 °/min | ~2h 15m  (~Wed Jun 17 22:59) |
-| 7600 rpm | 1328.2° / 5400° | 24.6% | 13.40 °/min | ~5h 03m  (~Thu Jun 18 01:48) |
-| 7700 rpm | 1562.0° / 5400° | 28.9% | 18.63 °/min | ~3h 26m  (~Thu Jun 18 00:10) |
-| 7800 rpm | 2282.3° / 5400° | 42.3% | 34.93 °/min | ~1h 29m  (~Wed Jun 17 22:13) |
+| 7500 rpm | 2084.2° / 5400° | 38.6% | 22.00 °/min | ~2h 30m  (~Wed Jun 17 23:25) |
+| 7600 rpm | 1476.6° / 5400° | 27.3% | 14.87 °/min | ~4h 23m  (~Thu Jun 18 01:18) |
+| 7700 rpm | 1783.0° / 5400° | 33.0% | 22.16 °/min | ~2h 43m  (~Wed Jun 17 23:37) |
+| 7800 rpm | 2601.8° / 5400° | 48.2% | 32.04 °/min | ~1h 27m  (~Wed Jun 17 22:21) |
 
 ## GID Results Status
 
@@ -18,4 +18,4 @@
 - 7700 rpm: [--] waiting (sim still running)
 - 7800 rpm: [--] waiting (sim still running)
 
-**Overall ETA (slowest case):** ~5h 03m  (~Thu Jun 18 01:48)
+**Overall ETA (slowest case):** ~4h 23m  (~Thu Jun 18 01:18)
