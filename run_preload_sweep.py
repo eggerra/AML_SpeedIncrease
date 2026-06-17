@@ -3,7 +3,9 @@ run_preload_sweep.py
 ====================
 Parametric preload sweep — 3 cases run sequentially on local Abaqus/Standard (14 CPUs).
 
-Cases (n_closed=0.8 per end, n_active=7.0, oval wire, Z-morphed C3D4 mesh):
+Cases (n_closed=1.25 per end, n_active=6.1, oval wire, Z-morphed C3D4 mesh):
+  Fix 2026-06-17: n_closed fixed at 1.25 (drawing value) to prevent dead-zone
+  penetration that was inflating preload forces by ~30% in the previous sweep.
   250N : L0=47.58 mm  ->  F_preload~250 N,  F_full~617 N
   265N : L0=48.26 mm  ->  F_preload~265 N,  F_full~632 N
   280N : L0=48.95 mm  ->  F_preload~280 N,  F_full~647 N
@@ -27,7 +29,7 @@ CASES = [
     {
         "label":         "250N",
         "L0":            "47.58",
-        "n_closed":      "0.8",
+        "n_closed":      "1.25",
         "F_preload":     "250.0",
         "F_full_target":  617.0,
         "step_out":      "ValveSpring_250N_oval.step",
@@ -41,7 +43,7 @@ CASES = [
     {
         "label":         "265N",
         "L0":            "48.26",
-        "n_closed":      "0.8",
+        "n_closed":      "1.25",
         "F_preload":     "265.0",
         "F_full_target":  632.0,
         "step_out":      "ValveSpring_265N_oval.step",
@@ -55,7 +57,7 @@ CASES = [
     {
         "label":         "280N",
         "L0":            "48.95",
-        "n_closed":      "0.8",
+        "n_closed":      "1.25",
         "F_preload":     "280.0",
         "F_full_target":  647.0,
         "step_out":      "ValveSpring_280N_oval.step",
@@ -218,7 +220,7 @@ with open(SIM_LOG, "w", encoding="utf-8") as f:
     f.write(
         f"# Preload Sweep Log\n\n"
         f"**Run started:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"**Cases:** 250 N / 265 N / 280 N  (n_closed=0.8, n_active=7.0, Z-morphed C3D4 mesh)\n\n"
+        f"**Cases:** 250 N / 265 N / 280 N  (n_closed=1.25, n_active=6.1, Z-morphed C3D4 mesh)\n\n"
         f"## Targets\n"
         f"| Case | L0 [mm] | s_preload [mm] | F_preload [N] | F_full_target [N] |\n"
         f"|------|---------|---------------|--------------|-------------------|\n"
