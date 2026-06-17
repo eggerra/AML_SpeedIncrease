@@ -76,7 +76,7 @@ COL_LIFT = 4   # [m]
 COL_WKPR = 13  # [N/m²]
 
 CYCLE_DEG         = 360.0
-N_CYCLES_EXPECTED = 2       # cycles 6–7 (TIMS=0.08s limits binary storage to last 2 cycles)
+N_CYCLES_EXPECTED = 5       # cycles 11–15 (TIMS=0.16s limits binary storage to last 5 cycles)
 PUMP_UP_THR_MM    = 0.10    # mm
 
 # Cycle colour map: cycle 2 (blue) → cycle 7 (red)
@@ -98,6 +98,7 @@ def results_ready():
     """
     Return True when all 4 speed-case HLIF files contain ≥ 5 cycles of data
     (cam angle span ≥ 1800°) and the jobstate is no longer 'running'.
+    With TIMS=0.16s the binary stores cycles 11–15 (span = 5×360 = 1800°).
     """
     speeds = [7500, 7600, 7700, 7800]
     for rpm in speeds:
@@ -582,12 +583,12 @@ def build_pdf_section(speeds, all_data, out_path):
 
     story.append(Paragraph(
         "The re-run results post-processing extends the output window to "
-        "<b>cycles 6–7</b> (cam angle 1800°–2520°).  The simulation binary storage "
-        "begins at TIMS = 0.08 s, which corresponds to the start of cycle 6 — "
-        "cycles 1–5 are not retained in the TYCON binary and cannot be extracted. "
+        "<b>cycles 11–15</b> (cam angle 3600°–5400°).  The simulation binary storage "
+        "begins at TIMS = 0.16 s, which corresponds to the start of cycle 11 — "
+        "cycles 1–10 are not retained in the TYCON binary and cannot be extracted. "
         "Each 360° cam segment is treated as one independent lift event. "
-        "For every HLA element the <b>minimum lift on the base circle is compared "
-        "between cycle 6 and cycle 7</b>: a rising minimum indicates that pump-up "
+        "For every HLA element the <b>minimum lift on the base circle is tracked "
+        "across cycles 11–15</b>: a rising minimum indicates that pump-up "
         "is still growing at the end of the simulation (not yet saturated). "
         "A stable or falling minimum indicates that the HLA has reached its "
         "pump-up equilibrium. No value above the detection threshold indicates "
@@ -604,21 +605,21 @@ def build_pdf_section(speeds, all_data, out_path):
     figs = [
         (FIG_OVERLAY_INTL, 9/16,
          "Fig. 6-1: Cycle overlay — Left bank (INTL_HLIF1–8).",
-         "Each subplot shows cycles 6 (blue) and 7 (red) overlaid at all speed cases. "
+         "Each subplot shows cycles 11–15 overlaid at all speed cases. "
          "The solid traces are the highest speed; faded traces show other speeds. "
-         "A rising baseline from blue to red confirms pump-up still growing at cycle 7. "
+         "A rising baseline from first to last cycle confirms pump-up still growing. "
          "Elements with pump-up are marked with ▲."),
         (FIG_OVERLAY_INTr, 9/16,
          "Fig. 6-2: Cycle overlay — Right bank (INTr_HLIF1–8).",
          "Equivalent view for the right-bank intake elements."),
         (FIG_TREND, 10/16,
          "Fig. 6-3: Min-lift per cycle for all 16 elements.",
-         "Each line = one speed case. Cycle 6 vs cycle 7: a rising value means "
+         "Each line = one speed case. Cycles 11–15: a rising value means "
          "pump-up is still accumulating at the end of the simulation. "
          "Flat lines near zero = stable. Elements in red text exceed the 0.10 mm threshold."),
         (FIG_HEATMAP, 5/12,
-         "Fig. 6-4: Pump-up growth heatmap — Δ min lift (cycle 7 − cycle 6).",
-         "Positive values (red) = pump-up still growing between the last two cycles. "
+         "Fig. 6-4: Pump-up growth heatmap — Δ min lift (cycle 15 − cycle 11).",
+         "Positive values (red) = pump-up still growing between first and last stored cycle. "
          "Near-zero (green) = HLA has reached equilibrium or is stable. "
          "The separator line divides left bank (top) from right bank (bottom)."),
     ]
@@ -647,8 +648,8 @@ def build_pdf_section(speeds, all_data, out_path):
     hdr_row = [
         Paragraph("Element", st["cell_hdr"]),
         Paragraph("Speed\n[rpm]", st["cell_hdr"]),
-        Paragraph("Min lift\ncyc 2 [mm]", st["cell_hdr"]),
-        Paragraph("Min lift\ncyc 7 [mm]", st["cell_hdr"]),
+        Paragraph("Min lift\ncyc 11 [mm]", st["cell_hdr"]),
+        Paragraph("Min lift\ncyc 15 [mm]", st["cell_hdr"]),
         Paragraph("Δ min lift\n[mm]", st["cell_hdr"]),
         Paragraph("Pump-up?", st["cell_hdr"]),
         Paragraph("Severity", st["cell_hdr"]),
@@ -733,8 +734,8 @@ def build_pdf_section(speeds, all_data, out_path):
     if n_pu == 0:
         assess = (
             "No pump-up detected across all 16 intake HLA elements and all evaluated "
-            "speed cases. The HLA min-lift on the base circle does not rise between "
-            "cycle 2 and cycle 7, confirming that the updated spring (04_spring_update) "
+            "speed cases. The HLA min-lift on the base circle does not rise across "
+            "cycles 11–15, confirming that the updated spring (04_spring_update) "
             "provides sufficient seat load to fully close the HLA check valve and bleed "
             "down any accumulated oil volume within the available base-circle dwell time. "
             "The intake valve train is dynamically stable across the full evaluated speed range."
@@ -753,7 +754,7 @@ def build_pdf_section(speeds, all_data, out_path):
             "base-circle dwell time at that speed. "
             "Recommended actions: (1) Increase intake spring seat load to reduce "
             "cam-follower separation time; (2) Review HLA bleed orifice diameter; "
-            "(3) Extend simulation to 14 cycles to confirm whether pump-up saturates "
+            "(3) Extend simulation beyond 15 cycles to confirm whether pump-up saturates "
             "or diverges."
         )
 
@@ -761,8 +762,8 @@ def build_pdf_section(speeds, all_data, out_path):
     story.append(Spacer(1, 4*mm))
     story.append(Paragraph(
         f"Cycle-by-cycle data from {MODEL}.etd, "
-        f"post-processed with setResultsInterval covering cycles 6–7 "
-        f"(TIMS=0.08 s limits binary storage to last 2 cam cycles). "
+        f"post-processed with setResultsInterval covering cycles 11–15 "
+        f"(TIMS=0.16 s limits binary storage to last 5 cam cycles). "
         f"Analysis by analyze_hlif_cycles.py — 2026-06-17.",
         st["note"]))
 
@@ -810,7 +811,7 @@ def main():
     all_ready = True
     for rpm, deg in sorted(span.items()):
         cycles_avail = deg / 360
-        ready = cycles_avail >= 1.5
+        ready = cycles_avail >= 4.5
         print(f"  {rpm} rpm: {deg:.0f}° = {cycles_avail:.1f} cycles  "
               f"{'[READY]' if ready else '[PENDING]'}")
         if not ready:
@@ -821,7 +822,7 @@ def main():
         return all_ready
 
     if not all_ready:
-        print("\nResults not yet complete. Re-run when all cases show >= 6 cycles.")
+        print("\nResults not yet complete. Re-run when all cases show >= 5 cycles.")
         return False
 
     print("\n[1/5] Loading multi-cycle data ...")
