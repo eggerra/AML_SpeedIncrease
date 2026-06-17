@@ -323,3 +323,12 @@
   - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
 
 ## 2026-06-17 15:31:25  —  Case 250N — RUNNING 3.9h — Step 2 Inc 66  total=0.00s  step=5.00mm
+
+---
+### 2026-06-17 15:40
+
+**Local job** (`ValveSpring_oval_contact_abaqus`) — RUNNING
+  - Local (Win, 14 CPU): Step 2 (valve lift), Inc 49, step time 10.00/10.0 mm (100%)
+
+**HPC job** (`279357.atgrzsl4803`) — UNKNOWN / NOT IN QUEUE
+  - HPC fe6 (32 CPU, Abq2025HF4) — UNKNOWN / NOT IN QUEUE: no increment data yet
