@@ -47,7 +47,7 @@ Z_TOL   = 0.40              # node selection tolerance [mm]
 # Contact surface: active coil zone only (exclude closed/ground end coils)
 N_CLOSED  = float(os.environ.get("SPRING_N_CLOSED", "0.8"))
 WIRE_A    = float(os.environ.get("SPRING_WIRE_A",   "2.92"))
-N_TOTAL   = 8.6
+N_TOTAL   = 9.4
 N_ACTIVE  = N_TOTAL - 2 * N_CLOSED
 H_CLOSED  = N_CLOSED * WIRE_A
 H_ACTIVE  = L0 - 2 * H_CLOSED
@@ -93,7 +93,7 @@ REF = [
 #   Phase 3 (lift 8.0-> 10.0 mm): k ≈ 26.7 N/mm  (mid-OD coils binding)
 #   Note: FEA will refine these estimates; analytical model is indicative only.
 
-LIFT_KINK1   = 5.2
+LIFT_KINK1   = 4.34
 LIFT_KINK2   = 8.0
 S_KINK1      = S_PRELOAD + LIFT_KINK1
 S_KINK2      = S_PRELOAD + LIFT_KINK2

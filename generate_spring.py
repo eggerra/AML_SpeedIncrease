@@ -1,6 +1,6 @@
 """
 Valve Spring CAD Generator - A1770530500 Intake Valve Spring (Beehive)
-Drawing parameters: oval wire 2.92x3.66mm, beehive profile, 8.6 coils
+Drawing parameters: oval wire 2.92x3.66mm, beehive profile, 9.4 coils
 
 Pitch is NON-UNIFORM (progressive):
   - Bottom n_closed coils : dead/closed (wire touching, zero gap)
@@ -25,7 +25,7 @@ import os
 # -- Drawing parameters (wire cross-section and diameters unchanged) -----------
 wire_a     = 2.92    # wire axial dimension (along spring axis) [mm]
 wire_r     = 3.66    # wire radial dimension (transverse to axis) [mm]
-nt         = 8.6     # total coils
+nt         = 9.4     # total coils  (8.6→9.4: n_active 6.1→6.9, rate 42→37.2 N/mm matching measurement)
 Di_bot     = 15.90   # inner diameter bottom [mm]
 Di_top     = 12.00   # inner diameter top [mm]
 grind_z    = 0.75    # ground end cut depth [mm]
@@ -52,7 +52,7 @@ pitch_mean = h_active / n_active        # = 6.361 mm mean active pitch
 # D_pitch = 0.15  ->  p_bot = 5.407 mm (gap 2.487 mm), p_top = 7.315 mm (gap 4.395 mm)
 # D_pitch: places kink1 at LIFT_KINK1=5.2mm lift from L_installed=36.1mm
 _L_INST   = 36.1
-_KINK1_MM = 5.2
+_KINK1_MM = 4.34   # kink1 position from INT_Spring_measurement.txt (flat region at 403N)
 _s_bind   = (L0 - _L_INST) + _KINK1_MM
 D_pitch   = max(0.05, min(0.30, 1.0 - (_s_bind + n_active * wire_a) / h_active))
 

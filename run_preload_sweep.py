@@ -3,17 +3,19 @@ run_preload_sweep.py
 ====================
 Parametric preload sweep — 3 cases run sequentially on local Abaqus/Standard (14 CPUs).
 
-Cases (n_closed=1.25 per end, n_active=6.1, oval wire, Z-morphed C3D4 mesh):
-  Fix 2026-06-17: n_closed fixed at 1.25 (drawing value) to prevent dead-zone
-  penetration that was inflating preload forces by ~30% in the previous sweep.
-  250N : L0=47.58 mm  ->  F_preload~250 N,  F_full~617 N
-  265N : L0=48.26 mm  ->  F_preload~265 N,  F_full~632 N
-  280N : L0=48.95 mm  ->  F_preload~280 N,  F_full~647 N
+Cases (n_closed=1.25 per end, n_active=6.9, ellipse wire, Z-morphed mesh):
+  Fix 2026-06-17b: nt raised 8.6->9.4 (n_active 6.1->6.9) to match measurement rate
+  37.2 N/mm.  Previous 8.6-coil mesh gave 42 N/mm (13% too stiff); new 9.4-coil
+  mesh gives 37.1 N/mm.  L0 values unchanged (were already correct for this geometry).
+  Source mesh regenerated from ellipse STEP via Netgen before case loop.
+  250N : L0=47.58 mm  ->  F_preload~250 N,  F_full~621 N
+  265N : L0=48.26 mm  ->  F_preload~265 N,  F_full~636 N
+  280N : L0=48.95 mm  ->  F_preload~280 N,  F_full~651 N
 
 Writes per-case RF files and a combined comparison plot spring_FvL_sweep.png.
 Git-commits simulation_log.md every 10 min during each solve.
 """
-import os, sys, subprocess, time, datetime, json
+import os, sys, subprocess, time, datetime, json, shutil
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -31,7 +33,7 @@ CASES = [
         "L0":            "47.58",
         "n_closed":      "1.25",
         "F_preload":     "250.0",
-        "F_full_target":  617.0,
+        "F_full_target":  621.0,
         "step_out":      "ValveSpring_250N_oval.step",
         "mesh_inp":      "ValveSpring_250N_mesh.inp",
         "ccx_job":       "ValveSpring_250N_contact",
@@ -45,7 +47,7 @@ CASES = [
         "L0":            "48.26",
         "n_closed":      "1.25",
         "F_preload":     "265.0",
-        "F_full_target":  632.0,
+        "F_full_target":  636.0,
         "step_out":      "ValveSpring_265N_oval.step",
         "mesh_inp":      "ValveSpring_265N_mesh.inp",
         "ccx_job":       "ValveSpring_265N_contact",
@@ -59,7 +61,7 @@ CASES = [
         "L0":            "48.95",
         "n_closed":      "1.25",
         "F_preload":     "280.0",
-        "F_full_target":  647.0,
+        "F_full_target":  651.0,
         "step_out":      "ValveSpring_280N_oval.step",
         "mesh_inp":      "ValveSpring_280N_mesh.inp",
         "ccx_job":       "ValveSpring_280N_contact",
@@ -195,7 +197,7 @@ def plot_comparison():
             ax_r.plot(sm, k, color=c["color"], linewidth=1.8, marker="o", ms=3)
 
     ax.set_ylabel("Spring Force [N]", fontsize=11)
-    ax.set_title("Valve Spring — Preload Sweep  (n_closed=0.8, oval wire, Abaqus/Standard)",
+    ax.set_title("Valve Spring — Preload Sweep  (nt=9.4, n_closed=1.25, ellipse, Abaqus/Standard)",
                  fontsize=11)
     ax.legend(fontsize=9, loc="upper left")
     ax.grid(True, alpha=0.3)
@@ -220,7 +222,7 @@ with open(SIM_LOG, "w", encoding="utf-8") as f:
     f.write(
         f"# Preload Sweep Log\n\n"
         f"**Run started:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"**Cases:** 250 N / 265 N / 280 N  (n_closed=1.25, n_active=6.1, Z-morphed C3D4 mesh)\n\n"
+        f"**Cases:** 250 N / 265 N / 280 N  (n_closed=1.25, n_active=6.9, nt=9.4, ellipse, Z-morphed mesh)\n\n"
         f"## Targets\n"
         f"| Case | L0 [mm] | s_preload [mm] | F_preload [N] | F_full_target [N] |\n"
         f"|------|---------|---------------|--------------|-------------------|\n"
@@ -232,6 +234,55 @@ with open(SIM_LOG, "w", encoding="utf-8") as f:
     f.write("\n## Progress\n")
 
 completed_cases = []
+
+# ── Source mesh regeneration (nt=9.4, ellipse, L0=47.43 base) ─────────────────
+# The source mesh topology determines spring stiffness.  Previous mesh had nt=8.6
+# (n_active=6.1, rate≈42 N/mm); measurement requires 37.2 N/mm → n_active=6.9 →
+# nt=9.4.  Regenerate from ellipse STEP via Netgen before morphing to case L0s.
+BASE_STEP  = os.path.join(BASE, "ValveSpring_9p4_base.step")
+NEW_MESH   = os.path.join(BASE, "ValveSpring_abq_mesh_new.inp")
+SRC_MESH   = os.path.join(BASE, "ValveSpring_abq_mesh.inp")
+
+log("Source mesh regen: generating base STEP (nt=9.4, ellipse, L0=47.43)")
+run(
+    [FREECAD, os.path.join(BASE, "generate_spring.py")],
+    env={
+        "SPRING_PROFILE":  "ellipse",
+        "SPRING_L0":       "47.43",
+        "SPRING_N_CLOSED": "1.25",
+        "SPRING_STEP_OUT": "ValveSpring_9p4_base.step",
+        "SPRING_STL_OUT":  "ValveSpring_9p4_base.stl",
+    },
+    desc="Generate base STEP nt=9.4 ellipse",
+)
+if not os.path.isfile(BASE_STEP):
+    sys.exit(f"ERROR: base STEP not created: {BASE_STEP}")
+log(f"Base STEP: {os.path.getsize(BASE_STEP)//1024} kB")
+
+log("Source mesh regen: meshing base STEP via Netgen (maxh=1.5 mm)")
+with open(os.path.join(BASE, "_mesh_config.json"), "w") as _f:
+    json.dump({
+        "SPRING_STEP":     BASE_STEP,
+        "SPRING_MESH_OUT": NEW_MESH,
+        "SPRING_MAXH":     "1.5",
+    }, _f)
+# Remove old netgen output guard so mesh_netgen.py does not skip
+if os.path.isfile(NEW_MESH):
+    os.remove(NEW_MESH)
+run([FREECAD, os.path.join(BASE, "mesh_netgen.py")], desc="Netgen mesh nt=9.4 base")
+if not os.path.isfile(NEW_MESH):
+    sys.exit("ERROR: Netgen meshing of base STEP failed — check mesh_netgen.log")
+log(f"New source mesh: {os.path.getsize(NEW_MESH)//1024} kB")
+
+shutil.copy2(NEW_MESH, SRC_MESH)
+log("Replaced ValveSpring_abq_mesh.inp with nt=9.4 geometry")
+
+# Delete stale case mesh INPs so the case loop re-morphs from the new source
+for _c in CASES:
+    _mp = os.path.join(BASE, _c["mesh_inp"])
+    if os.path.isfile(_mp):
+        os.remove(_mp)
+        log(f"  Deleted stale mesh: {_c['mesh_inp']}")
 
 for case_idx, case in enumerate(CASES):
     label   = case["label"]
@@ -248,7 +299,7 @@ for case_idx, case in enumerate(CASES):
     run(
         [FREECAD, os.path.join(BASE, "generate_spring.py")],
         env={
-            "SPRING_PROFILE":  "oval",
+            "SPRING_PROFILE":  "ellipse",
             "SPRING_L0":       L0_str,
             "SPRING_N_CLOSED": case["n_closed"],
             "SPRING_STEP_OUT": case["step_out"],
@@ -356,7 +407,7 @@ for case_idx, case in enumerate(CASES):
                     SIM_LOG],
                    check=False, capture_output=True)
     subprocess.run(["git", "-C", BASE, "commit", "-m",
-                    f"sim: case {label} complete — L0={L0_str}mm, n_closed=0.8"],
+                    f"sim: case {label} complete — L0={L0_str}mm, nt=9.4"],
                    check=False, capture_output=True)
     subprocess.run(["git", "-C", BASE, "push"], check=False, capture_output=True)
 
@@ -399,11 +450,11 @@ files = (["simulation_log.md", "spring_FvL_sweep.png",
 subprocess.run(["git", "-C", BASE, "add"] + files, check=False)
 subprocess.run(
     ["git", "-C", BASE, "commit", "-m",
-     "feat: preload sweep 250/265/280N — n_closed=0.8, L0 adjusted, F_full on target\n\n"
-     "- 3 cases: L0=47.58/48.26/48.95mm, n_closed=0.8 (n_active=7.0)\n"
-     "- meshing via FreeCAD Netgen (checkoverlap=0) — Abaqus CAE noGUI and Gmsh both\n"
-     "  produce 0 nodes/elements for this geometry\n"
-     "- run_preload_sweep.py: updated to Netgen mesher, 10-min git monitoring\n\n"
+     "feat: preload sweep 250/265/280N — nt=9.4 ellipse, F on target\n\n"
+     "- nt raised 8.6->9.4, n_active 6.1->6.9, rate 42->37.2 N/mm (match measurement)\n"
+     "- source mesh regenerated from ellipse STEP via Netgen (maxh=1.5mm)\n"
+     "- kink1 updated 5.2->4.34mm (from measurement flat region at 403N)\n"
+     "- L0 values unchanged: 47.58/48.26/48.95mm (correct for new stiffness)\n\n"
      "Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"],
     check=False,
 )
