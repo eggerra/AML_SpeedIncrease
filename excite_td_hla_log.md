@@ -4,7 +4,7 @@
 **Casesets:** `EngineSpeed`, `EngineSpeed_HLA_0c0053mm`, `EngineSpeed_HLA_0c009mm`  
 **Total duration:** 5400° cam angle  
 **Last updated:** 2026-07-06 22:35  
-**Status:** COMPLETE — analysis written; 0c009mm_7600 post-proc ongoing, preliminary result available
+**Status:** COMPLETE — all 8 cases done; Section 10 fully updated with final 0c009mm_7600 result (39.4 µm)
 
 ## Run Progress
 
@@ -24,7 +24,8 @@
 - Re-runs started 2026-07-06 ~10:58 after previous run (2026-06-26) failed with TYCON.PAT IOError
 - All 8 cases completed successfully — results post-processing active
 - **HLA pump-up analysis complete — Section 10 appended to AML_Valvetrain_Model_Analysis.md (2026-07-06)**
-- 0c009mm_7600 post-proc still running (3773/~7898 files, 6/16 HLIF GIDs written); **preliminary result: base-circle lift ~19.4 µm, pk-pk ~135 µm** (6 channels) vs tight-gap 41.8 µm/149 µm — gap effect confirmed at 7600rpm; Section 10 to be updated with final values
+- 0c009mm_7600 post-proc COMPLETE (2026-07-06 22:26); **final result: base-circle lift 39.4 µm, max pk-pk 215 µm** (all 16 intake channels) vs tight-gap 41.8 µm/149 µm — delta 2.4 µm (6%); resonance-dominated at 7600 rpm regardless of gap size
+- Section 10 of AML_Valvetrain_Model_Analysis.md fully updated with final results and revised interpretation
 
 ## Overall Progress
 
