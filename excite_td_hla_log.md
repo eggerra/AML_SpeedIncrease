@@ -3,7 +3,7 @@
 **Model:** `AML_AE26_ChainDrive__04_spring_update_redMass_HLA_Var.etd`  
 **Casesets:** `EngineSpeed`, `EngineSpeed_HLA_0c0053mm`, `EngineSpeed_HLA_0c009mm`  
 **Total duration:** 5400° cam angle  
-**Last updated:** 2026-07-07 01:00  
+**Last updated:** 2026-07-07 01:10  
 **Status:** COMPLETE — all 8 cases done; Section 10 fully updated with final 0c009mm_7600 result (39.4 µm)
 
 ## Run Progress
