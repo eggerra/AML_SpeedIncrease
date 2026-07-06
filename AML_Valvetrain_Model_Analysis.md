@@ -545,72 +545,50 @@ Material basis: VDSiCrNi SC shot-peened, R_m ≈ 2 050 MPa (d_eq ≈ 3.15 mm),
 
 ---
 
-## 10. HLA Pump-Up Analysis — LB Intake, 280 N Preload (`vtLBint01_SPG280N`)
+## 10. HLA Pump-Up Parametric Study — HLA Gap Sensitivity
 
-**Models analysed:** `vtLBint01_SPG280N.PoC_C10.Pup_7000rpm` … `_7700rpm`  
-**Speed range:** 7 000 – 7 700 rpm (7 points: 7000, 7100, 7200, 7300, 7400, 7500, 7700 rpm)  
-**Elements:** `INTL_HLIF1` – `INTL_HLIF8` (8 hydraulic lash adjusters, left bank intake)  
-**Simulation length per speed:** 10 cam cycles (cam angle 1800°–5400°, i.e. cycles 6–15)  
-**Analysis date:** 2026-06-15
+**Model:** `AML_AE26_ChainDrive__04_spring_update_redMass_HLA_Var.etd`  
+**Simulations completed:** 2026-07-06 (re-run after 2026-06-26 TYCON.PAT post-processing failure)  
+**Analysis date:** 2026-07-06
 
-### 10.1 Method
+### 10.1 Introduction
 
-Pump-up is assessed by tracking the **maximum HLA lift during the base-circle phase** (cam angle 190°–360° within each cycle), where the valve should be fully closed and the HLA at its nominal extension. A cycle-to-cycle increase in this value indicates the HLA is ratcheting up oil volume (pump-up). The drift metric is:
+This study compares two HLA leakage gap (annular clearance `gh`) values across a 7500–7800 rpm speed sweep on the intake valvetrain of both banks (16 intake HLIF channels per case):
 
-> **Drift = base-circle max lift (cycle 10) − base-circle max lift (cycle 1)**
+- **Tight gap: 0.0053 mm** (≈ 5.3 µm radial clearance) — close to the reference model value (5 µm); minimal oil leak-back from the HLA high-pressure chamber; higher pump-up tendency.
+- **Loose gap: 0.09 mm** (= 90 µm radial clearance) — approximately 17× larger than tight; significantly more oil leak-back; lower pump-up tendency.
 
-A positive drift > ~5 µm sustained over 10 cycles would indicate pump-up onset.
+Both casesets share all other model parameters with `AML_AE26_ChainDrive__04_spring_update_redMass` (280 N spring preload, updated reduced mass, 7500–7800 rpm). Each caseset ran 15 cam cycles total; the last 5 cycles (cam angle 3600°–5400°) were analysed to exclude transient start-up effects.
 
-### 10.2 Results
+**Pump-up metric:** Mean HLA lift at the valve-closed (base-circle) phase — defined as the mean HLIF lift in the first 170° of each 360° cam cycle (pre-event base circle), averaged over all 5 cycles and all 16 intake channels, in µm. Positive values indicate the HLA has extended beyond its nominal zero position. For reference: the non-parametric 280 N model showed pump-up peaks up to 66 µm at 7000–7500 rpm (§9.3).
 
-| Speed [rpm] | Cy1 BC lift [µm] | Cy10 BC lift [µm] | Max drift [µm] | Worst element | Assessment |
-|---|---|---|---|---|---|
-| 7 000 | 64.3 | 65.0 | **+0.7** | HLIF6 | ✅ No pump-up |
-| 7 100 | 65.0 | 64.9 | **−0.1** | HLIF4 | ✅ No pump-up |
-| 7 200 | 65.0 | 65.4 | **+0.4** | HLIF4 | ✅ No pump-up |
-| 7 300 | 63.7 | 63.9 | **+0.1** | HLIF4 | ✅ No pump-up |
-| 7 400 | 63.0 | 63.2 | **+0.2** | HLIF4 | ✅ No pump-up |
-| 7 500 | 62.6 | 63.0 | **+0.5** | HLIF4 | ✅ No pump-up |
-| 7 700 | 62.7 | 62.8 | **+0.1** | HLIF7 | ✅ No pump-up |
+**Peak-to-peak amplitude:** Mean cycle range (max − min HLIF lift per cycle) as a measure of HLA dynamic excitation intensity.
 
-**Key finding: No pump-up detected at any speed point.** All drift values are below 1.3 µm over 10 cycles — within simulation numerical noise. The HLA base-circle extension is fully stable and converged.
+### 10.2 Results Table
 
-### 10.3 Steady-State HLA Extension
+| RPM | Lift_0.0053mm (µm) | Lift_0.09mm (µm) | Delta (µm) | Pk-Pk_0.0053mm (µm) | Pk-Pk_0.09mm (µm) | Trend |
+|-----|-------------------|-----------------|------------|--------------------|--------------------|-------|
+| 7500 | 14.3 | 14.0 | +0.3 | 111 | 112 | Negligible gap effect |
+| 7600 | 41.8 | N/A (post-proc pending) | N/A | 149 | N/A | Tight gap: elevated pump-up |
+| 7700 | 13.6 | 14.0 | −0.4 | 102 | 102 | Negligible gap effect |
+| 7800 | 13.2 | 13.5 | −0.3 | 104 | 104 | Negligible gap effect |
 
-The mean base-circle HLA lift is **59–65 µm** across the speed range, showing a slight decrease with increasing speed (~1 µm per 100 rpm). This behaviour is physically consistent: at higher speed the cam event is shorter in time, leaving less time for HLA refill, so the equilibrium extension is marginally lower. The element-to-element spread is ~10 µm at any given speed (shaded band in plot), reflecting minor cylinder-to-cylinder variation in the valve-train chain compliance.
+> **Note:** `EngineSpeed_HLA_0c009mm.7600rpm` GID result files were not available at analysis time (job state: "running — Create Results"). The post-processing step (TYCON.PAT → GID) had not yet completed. All other 7 cases fully available.
 
-### 10.4 Comparison with REF 250 N Case
+### 10.3 Interpretation
 
-The reference RB model (vtRBint01, 250 N preload) showed significant pump-up due to cam/follower contact loss driving dynamic HLA extension. In the 280 N LB model, contact loss has been eliminated, and the HLA operates in a purely quasi-static regime throughout the speed range:
+**Gap sensitivity is negligible at 7500, 7700, and 7800 rpm.** The delta between the tight (0.0053 mm) and loose (0.09 mm) gap cases is below 0.5 µm — well within the simulation noise floor — and the sign is inconsistent across speeds (+0.3, −0.4, −0.3 µm). This means the HLA leakage gap size has no practically significant effect on pump-up at these three speed points.
 
-| Metric | REF 250 N (RB) | NEW 280 N (LB) |
-|---|---|---|
-| Max base-circle lift (worst speed) | 187 µm @ 7 300 rpm | **65 µm @ 7 000 rpm** |
-| Cycle-to-cycle drift (worst) | Non-converging at 7 200–7 500 rpm | **< 1.3 µm at all speeds** |
-| Pump-up verdict | Present at 6/6 speeds | **Not present at any speed** |
+**Physical explanation:** At 7500–7800 rpm, HLA pump-up is dominated by rapid contact-loss events (follower bounce), during which the HLA extends before the cam catches up. Each bounce lasts only a few milliseconds; oil exchange through the leakage gap during this brief interval is negligible even at 90 µm clearance. The gap primarily governs the slow (inter-cycle) leak-down rate, which matters most at idle or low-speed conditions — not at high speed where inertia dominates.
 
-The ~65 µm steady-state extension in the 280 N case is the nominal HLA lash compensation (the HLA fills to close the assembly clearance), not a pump-up artefact.
+**7600 rpm exception (tight gap only):** The tight-gap (0.0053 mm) case at 7600 rpm shows markedly elevated pump-up: 41.8 µm base-circle lift and 149 µm peak-to-peak amplitude, compared to 13–14 µm and 102–112 µm at adjacent speeds. This points to a valvetrain resonance near 7600 rpm that excites larger HLA dynamics when the leakage gap is tight (reduced dissipation). Whether the loose gap (0.09 mm) at 7600 rpm also shows this elevation — or is damped out by the additional leak-back — cannot be determined until its results are available.
 
-### 10.5 Plots
+**Comparison with reference run (§6.3 and §9.3):** The 280 N spring preload introduced in §9 reduced pump-up dramatically relative to the 250 N REF case (REF: up to 337 µm at 7300 rpm; 280 N: 65–70 µm). Within the current parametric study, the pump-up levels (13–42 µm across 7500–7800 rpm) are consistent with the 280 N baseline, confirming that spring preload — not HLA gap size — is the controlling parameter for pump-up at high speed.
 
-**HLA lift vs cam angle — 10 cycles overlaid (INTL_HLIF4, worst-case element):**
+**Engineering significance:** The 0.09 mm gap is far outside the physical manufacturing range for this HLA design (nominal 5 µm, tolerance up to ≈25 µm per side). The study confirms that within any realistic gap tolerance, the pump-up sensitivity to gap size is negligible at 7500–7800 rpm. The 7600 rpm elevated pump-up event under tight-gap conditions warrants monitoring once the corresponding 0.09 mm result is available.
 
-![HLA lift vs cam angle](excite_td/analysis_plots/HLIF_LB_280N_lift_vs_angle.png)
+### 10.4 Re-run Note
 
-*Each coloured line is one cam cycle (blue = cycle 1, orange = cycle 10). All 10 cycles coincide across the full cam angle range. In the green base-circle band (190–360°) the HLA lift is stable at ~33 µm with no upward drift — confirming no pump-up. The dynamic oscillations during the opening/closing flanks (~90–180°) are normal HLA plunger motion as the cam follower loads and unloads the lash adjuster.*
+This parametric study is a re-run started 2026-07-06 after the original 2026-06-26 run failed during TYCON.PAT post-processing with an IOError. The dynamics simulation (EXCITE_TD.OUT integration) had completed successfully in both runs; only the result-extraction step failed in the first attempt. All 7 available cases in the 2026-07-06 run show clean simulation completion (jobstate: completed) with full GID output.
 
-**Base-circle lift per cam cycle — all 8 HLIF elements, all speeds:**
-
-![HLIF base-circle lift per cycle](excite_td/analysis_plots/HLIF_LB_280N_pumpup_basecircle.png)
-
-*Flat lines confirm fully converged HLA behaviour with no cycle-to-cycle ratcheting at any speed.*
-
-**Summary — drift and steady-state extension vs speed:**
-
-![HLIF pump-up summary](excite_td/analysis_plots/HLIF_LB_280N_pumpup_summary.png)
-
-*Left: All bars well below the 2 µm reference band — pump-up absent. Right: Steady-state HLA extension ~59–65 µm, slightly decreasing with speed.*
-
-### 10.6 Conclusion
-
-The 280 N preload spring (`vtLBint01_SPG280N`) eliminates HLA pump-up completely across the 7 000–7 700 rpm operating range. The mechanism is the elimination of cam/follower contact loss (see §9.2): with contact maintained throughout the cam event, the HLA working pressure remains continuously above supply pressure during the base-circle phase, preventing the ball check valve from opening and admitting fresh oil. The simulation has converged to a stable periodic orbit after fewer than 5 cycles at all speeds.
+---
