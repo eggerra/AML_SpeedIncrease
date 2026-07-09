@@ -38434,3 +38434,29 @@ Run duration: ~12.2 hours (started ~12:51, completed ~01:02).
 | GAP_0c008mm.7700rpm | 5399.7 | 100.0% | ✅ COMPLETED |
 
 3 processes remaining (post-processing). All simulation runs finished.
+
+---
+
+## AML_AE26_ChainDrive__04_spring_update_redMass — Final Results
+
+**Completed:** 2026-07-10 01:21:23  
+
+| RPM | State | Final cam angle | Progress | CPU time (s) | Wall time (s) |
+|-----|-------|-----------------|----------|--------------|---------------|
+
+**Notes:** Reduced-mass variant of `_04_spring_update` — all 0 RPM cases completed successfully.
+
+## 2026-07-10 01:21:53
+
+| Case | Cam (°) | State |
+|------|---------|-------|
+| GAP_0c0042mm.7400rpm | 5399.8 | ✅ COMPLETED |
+| GAP_0c0042mm.7500rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c0042mm.7600rpm | 5400.0 | ✅ writing results (2 procs) |
+| GAP_0c0042mm.7700rpm | 5399.7 | ✅ writing results (2 procs) |
+| GAP_0c008mm.7400rpm | 5399.8 | ✅ COMPLETED |
+| GAP_0c008mm.7500rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c008mm.7600rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c008mm.7700rpm | 5399.7 | ✅ COMPLETED |
+
+2 processes remaining (0042mm/7600+7700 post-processing). Study complete.
