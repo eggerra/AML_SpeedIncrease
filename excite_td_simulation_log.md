@@ -38486,3 +38486,30 @@ Run duration: ~12.2 hours (started ~12:51, completed ~01:02).
 | GAP_0c008mm.7700rpm | 5399.7 | ✅ COMPLETED |
 
 1 process remaining — 0042mm/7700rpm post-processing. Study complete.
+
+---
+
+## AML_AE26_ChainDrive__04_spring_update_redMass — Final Results
+
+**Completed:** 2026-07-10 01:41:24  
+
+| RPM | State | Final cam angle | Progress | CPU time (s) | Wall time (s) |
+|-----|-------|-----------------|----------|--------------|---------------|
+
+**Notes:** Reduced-mass variant of `_04_spring_update` — all 0 RPM cases completed successfully.
+
+## 2026-07-10 01:41:53 — STUDY FULLY COMPLETE
+
+| Case | Cam (°) | State |
+|------|---------|-------|
+| GAP_0c0042mm.7400rpm | 5399.8 | ✅ COMPLETED |
+| GAP_0c0042mm.7500rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c0042mm.7600rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c0042mm.7700rpm | 5399.7 | ✅ COMPLETED |
+| GAP_0c008mm.7400rpm | 5399.8 | ✅ COMPLETED |
+| GAP_0c008mm.7500rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c008mm.7600rpm | 5400.0 | ✅ COMPLETED |
+| GAP_0c008mm.7700rpm | 5399.7 | ✅ COMPLETED |
+
+All 8 HLA_Var cases fully complete. 1 background batch process remaining (JMS scheduler).
+Total run time: ~12.8 hours (2026-07-09 12:51 — 2026-07-10 01:42).
